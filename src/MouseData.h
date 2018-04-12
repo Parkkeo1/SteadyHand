@@ -7,62 +7,38 @@
 #include <queue>
 #include <mutex>
 #include <iostream>
+#include <fstream>
 #include <Windows.h>
 
-// code partially based on:
+// code partially derived from:
 // https://github.com/rspeele/MouseMeat/blob/master/Events.cpp
 
 struct MouseData {
+
 	std::chrono::milliseconds ms_time;
 	std::int16_t dx;
 	std::int16_t dy;
 	bool is_m_left_down;
-
-	// Overload << operator?
+public:
+	friend std::ostream& operator<<(std::ostream& os, const MouseData& m_data);
 };
 
 class BufferData {
 
-	std::vector<MouseData> active_buf;
-	std::vector<MouseData> inactive_buf;
-	const std::queue<MouseData> empty_buf;
+	std::vector<MouseData> primary_buffer;
+	std::vector<MouseData> secondary_buffer;
 public:
+	std::vector<MouseData> *receive_buf;
+	std::vector<MouseData> *output_buf;
 	std::mutex thread_sync;
 	std::condition_variable thread_signal;
 
-	// TODO: Move method implementations to .cpp
+	BufferData();
 
-	void AddMouseData(MouseData new_data) {
-		std::lock_guard<std::mutex> lock(thread_sync);
-		active_buf.push_back(new_data);
-		thread_signal.notify_one();
-	}
-
-	std::vector<MouseData>& GetUpdatedOutputBuffer() {
-		std::lock_guard<std::mutex> lock(thread_sync);
-		inactive_buf = active_buf;
-		active_buf.clear();
-
-		return inactive_buf;
-	}
-
-	void OutputThread(bool *stop, DWORD out_thread) {
-		try {
-			// check for whether to record. temp true.
-			while (true) {
-				auto curr_data_buf = GetUpdatedOutputBuffer();
-				for (MouseData m_data : curr_data_buf) {
-					// save mouse data object to file. Overload << operator?
-				}
-			}
-		} catch (const std::exception &error) {
-			std::cerr << error.what() << std::endl;
-		}
-		// my program shouldnt close whenever it stops reading input.
-		// from derived code.
-		/**stop = true;
-		PostThreadMessage(out_thread, WM_QUIT, 0, 0);*/
-	}
+	void AddMouseData(MouseData new_data);
+	void UpdateOutputBuffer();
+	// NOTE: Change filename parameter to a ENUM type for each in-game weapon?
+	void BufferData::SaveOutputBufToFile(std::string filename); 
 };
 
 #endif
