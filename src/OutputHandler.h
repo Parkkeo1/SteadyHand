@@ -6,7 +6,9 @@
 
 void OutputThread(bool *stop, DWORD out_thread) {
 	try {
-		while ()
+		while (true) {
+
+		}
 	}
 }
 
