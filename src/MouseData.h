@@ -15,11 +15,18 @@
 
 struct MouseData {
 
-	std::chrono::milliseconds ms_time;
-	std::int16_t dx;
-	std::int16_t dy;
-	bool is_m_left_down;
+	long long ms_time;
+	short dx;
+	short dy;
+	bool was_left_pressed;
+	bool was_left_released;
 public:
+	MouseData(const long long curr_time, const short x_delta, const short y_delta, 
+			  const bool left_pressed, const bool left_released) : ms_time(curr_time), 
+		                                                           dx(x_delta), 
+																   dy(y_delta), 
+																   was_left_pressed(left_pressed), 
+															       was_left_released(left_released) {};
 	friend std::ostream& operator<<(std::ostream& os, const MouseData& m_data);
 };
 
@@ -35,10 +42,10 @@ public:
 
 	BufferData();
 
-	bool BufferData::AddMouseData(MouseData new_data);
+	void BufferData::AddMouseData(const MouseData &new_data);
 	void UpdateOutputBuffer();
 	// NOTE: Change filename parameter to a ENUM type for each in-game weapon?
-	void BufferData::SaveOutputBufToFile(std::string filename); 
+	void BufferData::SaveOutputBufToFile(const std::string filename); 
 };
 
 #endif
