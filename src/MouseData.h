@@ -35,7 +35,7 @@ public:
 
 	BufferData();
 
-	void AddMouseData(MouseData new_data);
+	bool BufferData::AddMouseData(MouseData new_data);
 	void UpdateOutputBuffer();
 	// NOTE: Change filename parameter to a ENUM type for each in-game weapon?
 	void BufferData::SaveOutputBufToFile(std::string filename); 

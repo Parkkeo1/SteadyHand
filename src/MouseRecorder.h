@@ -4,17 +4,8 @@
 class MouseRecorder {
 	BufferData mouse_buffer;
 	bool is_finished_recording;
+	RAWINPUTDEVICE mouse_device;
 
-	void OutputThread(DWORD out_thread) {
-		try {
-
-			while (!is_finished_recording) {
-				mouse_buffer.UpdateOutputBuffer();
-				mouse_buffer.SaveOutputBufToFile("test.txt");
-				// update is_finished_recording condition.
-			}
-		} catch (const std::exception &err) {
-			std::cerr << err.what() << std::endl;
-		}
-	}
+	void OutputThread(DWORD out_thread);
+	void RegisterMouseDevice(); // NOTE: May need to set window (hidden window).
 };

@@ -11,10 +11,15 @@ BufferData::BufferData() {
 	output_buf = &secondary_buffer;
 }
 
-void BufferData::AddMouseData(MouseData new_data) {
+// returns true if mouse's left-click was held down in data.
+bool BufferData::AddMouseData(MouseData new_data) {
 	std::lock_guard<std::mutex> lock(thread_sync);
-	receive_buf->push_back(new_data);
+	// only adding when player is firing the weapon.
+	if (new_data.is_m_left_down) { 
+		receive_buf->push_back(new_data);
+	}
 	thread_signal.notify_one();
+	return new_data.is_m_left_down;
 }
 
 void BufferData::UpdateOutputBuffer() {
