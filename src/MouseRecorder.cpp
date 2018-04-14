@@ -1,25 +1,33 @@
 #include "MouseRecorder.h"
+#include "main.h"
 
-void MouseRecorder::CreateHiddenWindow(HINSTANCE h_inst) {
+void MouseRecorder::InitRecorder(HINSTANCE h_inst) {
+	this->curr_instance = h_inst;
+	this->RegisterMouseDevice();
+	this->CreateHiddenWindow();
+}
+
+void MouseRecorder::CreateHiddenWindow() {
 	// code derived from:
 	// https://stackoverflow.com/a/4081383
-	WNDCLASSEX message_only;
-	message_only.cbSize = sizeof(WNDCLASSEX);
-	message_only.lpfnWndProc = DefWindowProc;
+	WNDCLASS message_only;
+	message_only.lpfnWndProc = WndProc;
 	message_only.hInstance = curr_instance;
 	message_only.lpszClassName = "MouseRecord";
 	
-	if (RegisterClassEx(&message_only)) {
-		hidden_window = CreateWindowEx(0, "MouseRecord", "MouseRecord", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+	if (RegisterClass(&message_only)) {
+		this->hidden_window = CreateWindow("MouseRecord", "MouseRecord", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, curr_instance, NULL);
 	}
 }
 
-void MouseRecorder::OutputThread(DWORD out_thread) {
+void MouseRecorder::OutputThread() {
 	try {
-		while (!is_finished_recording) {
-			mouse_buffer.UpdateOutputBuffer();
-			mouse_buffer.SaveOutputBufToFile("test.txt");
+		std::ofstream file_stream("test.txt");
+		bool to_save_curr = false;
+		while (!is_finished_recording) { 
 			// TODO: update is_finished_recording condition through GUI button: RECORD.
+			mouse_buffer.UpdateOutputBuffer();
+			mouse_buffer.SaveBufferToFile(to_save_curr, file_stream);
 		}
 	} catch (const std::exception &err) {
 		std::cerr << err.what() << std::endl;
@@ -41,16 +49,16 @@ void MouseRecorder::ProcessRawMouseData(const RAWMOUSE &raw_mouse_data) {
 
 	// translating raw button data
 	switch (raw_mouse_data.ulButtons) {
-		case 1:
-			left_pressed = true;
-			left_released = false;
-			break;
-		case 2:
-			left_pressed = false;
-			left_released = true;
-		default:
-			left_pressed = false;
-			left_released = false;
+	case 1:
+		left_pressed = true;
+		left_released = false;
+		break;
+	case 2:
+		left_pressed = false;
+		left_released = true;
+	default:
+		left_pressed = false;
+		left_released = false;
 	}
 	// code derived from:
 	// https://stackoverflow.com/a/19555298
@@ -58,25 +66,25 @@ void MouseRecorder::ProcessRawMouseData(const RAWMOUSE &raw_mouse_data) {
 		std::chrono::system_clock::now().time_since_epoch()
 	).count();
 
-	MouseData new_m_data(curr_time, raw_mouse_data.lLastX, raw_mouse_data.lLastY, 
-						 left_pressed, left_released);
-	mouse_buffer.AddMouseData(new_m_data);
+	MouseData new_m_data(curr_time, raw_mouse_data.lLastX, raw_mouse_data.lLastY,
+		left_pressed, left_released);
+	mouse_buffer.AddMouseDataToBuf(new_m_data);
 }
 
-// code referenced from Microsoft MSDN:
-// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx
-LRESULT MouseRecorder::WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARAM l_param) {
-	if (message == WM_INPUT) {
-		RAWINPUT raw_input;
-		UINT msg_size;
-		auto check_size = GetRawInputData((HRAWINPUT)l_param, RID_INPUT, &raw_input, &msg_size, sizeof(RAWINPUTHEADER));
-		if (check_size != msg_size) {
-			std::cout << "Received raw input was a correct size." << std::endl;
-		} else if (raw_input.header.dwType == RIM_TYPEMOUSE) {
-			// adds new mouse data after processing if valid.
-			ProcessRawMouseData(raw_input.data.mouse);
+void MouseRecorder::RunMouseRecorder(const std::string &filename) {
+	std::thread out_thread(&MouseRecorder::OutputThread, this);
+
+	// code referenced from Microsoft MSDN:
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms644936(v=vs.85).aspx
+	BOOL msg_code;
+	MSG message;
+	while ((msg_code = GetMessage(&message, hidden_window, 0, 0)) != 0) {
+		if (msg_code == -1) {
+			// handle the error and possibly exit
+		} else {
+			TranslateMessage(&message);
+			DispatchMessage(&message);
 		}
-		return 0;
 	}
-	return DefWindowProc(window_handle, message, w_param, l_param);
+	out_thread.join();
 }

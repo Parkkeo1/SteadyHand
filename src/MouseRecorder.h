@@ -1,4 +1,7 @@
 #pragma once
+#ifndef MOUSERECORDER_H
+#define MOUSERECORDER_H
+
 #include "MouseData.h"
 
 class MouseRecorder {
@@ -8,9 +11,15 @@ class MouseRecorder {
 	RAWINPUTDEVICE mouse_device;
 	HWND hidden_window;
 
-	void MouseRecorder::CreateHiddenWindow(HINSTANCE h_inst);
-	void OutputThread(DWORD out_thread);
-	void RegisterMouseDevice(); // NOTE: May need to set window (hidden window).
+public:
+	MouseRecorder() : mouse_buffer(), is_finished_recording(false) {};
+
+	void InitRecorder(HINSTANCE h_inst);
+	void CreateHiddenWindow();
+	void OutputThread();
+	void RegisterMouseDevice();
 	void ProcessRawMouseData(const RAWMOUSE &raw_mouse_data);
-	LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARAM l_param);
+	void RunMouseRecorder(const std::string &filename);
 };
+
+#endif
