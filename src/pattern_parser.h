@@ -9,10 +9,17 @@
 #include <iterator>
 
 enum Weapon {
-	AK_47,
-	M4_A4,
-	M4_A1S,
-	UMP_45
+	AK_47 = 0,
+	M4_A4 = 1,
+	M4_A1S = 2,
+	UMP_45 = 3
+};
+
+const std::vector<std::string> weapon_names = {
+	"ak_47",
+	"m4_a4",
+	"m4_als",
+	"ump_45"
 };
 
 struct PatternObject {

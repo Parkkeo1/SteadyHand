@@ -1,5 +1,11 @@
 #include "mouse_recorder.h"
 
+std::ostream& operator<<(std::ostream &os, const MouseData &m_data) {
+	os << m_data.ms_time << " " << m_data.dx << " " << m_data.dy 
+	   << " " << m_data.mleft_code << std::endl;
+	return os;
+}
+
 void RegisterInputDevices(HWND window) {
 	// code referenced from Microsoft MSDN documentation:
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#example_2
@@ -50,6 +56,19 @@ bool CreateHiddenWindow(HINSTANCE &h_inst, HWND &window_handle) {
 	return false;
 }
 
+void WriteBufferToFile(const Weapon weapon_to_save) {
+	std::string filename = weapon_names[weapon_to_save] + ".txt";
+	std::ofstream pattern_file(filename);
+
+	// booleans for keeping track of mouse's left button.
+	bool was_left_pressed = false;
+	bool was_right_pressed = false;
+
+	for (MouseData m_data : mouse_data_list) {
+		// TODO: keep track of bools and save to file as appropriate.
+	}
+}
+
 // method that receives messages sent by Windows to the given hidden/message-only window.
 // code referenced from Microsoft MSDN documentation:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#standard_read
@@ -73,14 +92,19 @@ LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARA
 
 			// detecting type of raw input.
 			if (raw_input->header.dwType == RIM_TYPEMOUSE) {
+				auto mouse_data = raw_input->data.mouse;
+
 				// code derived from:
 				// https://stackoverflow.com/a/19555298
 				long long curr_time = std::chrono::duration_cast<std::chrono::milliseconds>(
 					std::chrono::system_clock::now().time_since_epoch()
 				).count();
 
-				mouse_data_list.push_back({ curr_time, static_cast<int>(raw_input->data.mouse.lLastX),
-					                                   static_cast<int>(raw_input->data.mouse.lLastY) });
+				// processing & storing this raw data is done when user stops recording.
+				MouseData new_mdata(curr_time, static_cast<short>(mouse_data.lLastX), 
+					                static_cast<short>(mouse_data.lLastY), 
+					                static_cast<short>(mouse_data.usButtonFlags));
+				mouse_data_list.push_back(new_mdata);
 
 			} else if (raw_input->header.dwType == RIM_TYPEKEYBOARD) {
 				switch (raw_input->data.keyboard.VKey) {
@@ -89,10 +113,8 @@ LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARA
 						PostQuitMessage(0);
 						break;
 					} case kSaveVKey: { // TODO: save instead of just printing. Save m_data for only when m1 was down.
-						for (auto xy_info : mouse_data_list) {
-							std::cout << std::get<0>(xy_info) << " " << std::get<1>(xy_info) << " " << std::get<2>(xy_info) << std::endl;
-						}
-						std::cout << "recorded coordinates printed." << std::endl;
+						std::cout << "clearing vector." << std::endl;
+						mouse_data_list.clear();
 						break;
 					} default: {
 						std::cout << "undefined keypress." << std::endl;
@@ -105,14 +127,12 @@ LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARA
 	}
 }
 
-int WINAPI WinMain(HINSTANCE h_inst, HINSTANCE h_prev_inst, LPSTR lp_cmd_line, int n_cmd_show) {
-	// TODO: Eventually wrap this recording functionality into a sub-main (RunRecorder()) function.
+void RunMouseRecorder(HINSTANCE &h_inst) {
 	HWND window_handle;
 	CreateHiddenWindow(h_inst, window_handle);
 	RegisterInputDevices(window_handle);
 
 	std::cout << "setup complete." << std::endl;
-	// TODO: Replace this with actual bool condition.
 	MSG message;
 	BOOL msg_code;
 
@@ -120,11 +140,16 @@ int WINAPI WinMain(HINSTANCE h_inst, HINSTANCE h_prev_inst, LPSTR lp_cmd_line, i
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms644928(v=vs.85).aspx#creating_loop
 	while ((msg_code = GetMessage(&message, NULL, 0, 0)) != 0) {
 		if (msg_code == -1) {
-			return 0;
+			return;
 		} else {
 			TranslateMessage(&message);
 			DispatchMessage(&message);
 		}
 	}
+}
+
+int WINAPI WinMain(HINSTANCE h_inst, HINSTANCE h_prev_inst, LPSTR lp_cmd_line, int n_cmd_show) {
+	// TODO: Replace this with actual stop condition, probably using ENUM states.
+	RunMouseRecorder(h_inst);
 	return 0;
 }
