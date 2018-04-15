@@ -21,7 +21,7 @@ void MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
 }
 
 // method that moves the mouse according to the weapon pattern.
-void RecoilMoveWithPattern(const PatternObject &loaded_pattern) {
+void MoveWithPattern(const PatternObject &loaded_pattern) {
 	INPUT m_input_buf;
 	MouseSetup(&m_input_buf);
 

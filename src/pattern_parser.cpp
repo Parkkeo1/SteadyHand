@@ -27,5 +27,7 @@ PatternObject LoadPatternFromFile(std::string filename, Weapon gun_name) {
 	} else {
 		std::cout << "file not found" << std::endl;
 	}
+
+
 	return spray_pattern;
 }
