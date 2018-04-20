@@ -1,26 +1,8 @@
 #pragma once
-#include <windows.h>
-#include <vector>
-#include <iostream>
-#include <chrono>
-#include <tuple>
 
-#include "pattern_parser.h"
+#include "mouse_pattern_data.h"
 
-// struct for storing mouse data from Windows raw input messages.
-struct MouseData {
-	long long ms_time;
-	short dx;
-	short dy;
-	short mleft_code;
-public:
-	MouseData(const long long curr_time, const short x_delta, 
-		      const short y_delta, const short m_left_status) : ms_time(curr_time),
-		                                                        dx(x_delta),
-		                                                        dy(y_delta),
-		                                                        mleft_code(m_left_status) {};
-	friend std::ostream& operator<<(std::ostream& os, const MouseData& m_data);
-};
+const LPCWSTR kClassName = TEXT("SteadyHand");
 
 // constants for Windows API raw input device codes.
 const short kDesktopUsage = 1;
@@ -33,13 +15,13 @@ const short kSaveVKey = 9; // by default it is TAB.
 
 // global variables necessary in handling windows and storing message data.
 std::vector<MouseData> mouse_data_list;
+Weapon curr_weapon;
 WNDPROC baseWndProc;
 
-// TODO: Add data filtering and file writing functions.
 void RegisterInputDevices(HWND window);
 bool CreateHiddenWindow(HINSTANCE &hInstance, HWND &window_handle);
 void WriteBufferToFile(const Weapon weapon_to_save);
-LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARAM l_param);
 
-void RunMouseRecorder(HINSTANCE &h_inst);
+LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARAM l_param);
+void RunMouseRecorder(HINSTANCE &h_inst, bool &is_recording);
 

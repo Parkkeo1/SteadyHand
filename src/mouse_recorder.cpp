@@ -31,7 +31,7 @@ void RegisterInputDevices(HWND window) {
 	std::cout << "Device registration successful." << std::endl;
 }
 		
-bool CreateHiddenWindow(HINSTANCE &h_inst, HWND &window_handle) {
+bool CreateHiddenWindow(HINSTANCE &h_inst, HWND &window_handle) { 
 	WNDCLASS hid_wind_class;
 
 	// code referenced from Microsoft MSDN documentation:
@@ -45,10 +45,10 @@ bool CreateHiddenWindow(HINSTANCE &h_inst, HWND &window_handle) {
 	hid_wind_class.hCursor = NULL;
 	hid_wind_class.hbrBackground = (HBRUSH)COLOR_WINDOWFRAME;
 	hid_wind_class.lpszMenuName = NULL;
-	hid_wind_class.lpszClassName = "test";
+	hid_wind_class.lpszClassName = kClassName;
 
 	if (RegisterClass(&hid_wind_class)) {
-		window_handle = CreateWindow("test", "test", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, h_inst, NULL);
+		window_handle = CreateWindow(kClassName, kClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, h_inst, NULL);
 		std::cout << "Window registration successful." << std::endl;
 		return true;		
 	}
@@ -57,16 +57,28 @@ bool CreateHiddenWindow(HINSTANCE &h_inst, HWND &window_handle) {
 }
 
 void WriteBufferToFile(const Weapon weapon_to_save) {
-	std::string filename = weapon_names[weapon_to_save] + ".txt";
+	std::string filename = kWeaponNames[weapon_to_save] + ".txt";
 	std::ofstream pattern_file(filename);
 
-	// booleans for keeping track of mouse's left button.
-	bool was_left_pressed = false;
-	bool was_right_pressed = false;
-
+	// booleans for keeping track of whether to save the mouse data.
+	bool to_save_curr = false;
 	for (MouseData m_data : mouse_data_list) {
-		// TODO: keep track of bools and save to file as appropriate.
+		switch(m_data.mleft_code) {
+		    case 1:
+				to_save_curr = true;
+				break;
+			case 2:
+				to_save_curr = false;
+				break;
+			default:
+				break;
+		}
+
+		if (to_save_curr) {
+			pattern_file << m_data;
+		}
 	}
+	pattern_file.close();
 }
 
 // method that receives messages sent by Windows to the given hidden/message-only window.
@@ -75,6 +87,7 @@ void WriteBufferToFile(const Weapon weapon_to_save) {
 LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARAM l_param) {
 	switch (message) {
 		case WM_INPUT: {
+			// TODO: refactor this big function into smaller chunks.
 			UINT dw_size;
 			GetRawInputData((HRAWINPUT)l_param, RID_INPUT, NULL, &dw_size, sizeof(RAWINPUTHEADER));
 			LPBYTE lpb = new BYTE[dw_size];
@@ -90,7 +103,6 @@ LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARA
 			// size of message/data has been confirmed to be correct.
 			RAWINPUT* raw_input = (RAWINPUT*)lpb;
 
-			// detecting type of raw input.
 			if (raw_input->header.dwType == RIM_TYPEMOUSE) {
 				auto mouse_data = raw_input->data.mouse;
 
@@ -100,7 +112,7 @@ LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARA
 					std::chrono::system_clock::now().time_since_epoch()
 				).count();
 
-				// processing & storing this raw data is done when user stops recording.
+				// recording new mouse movement as object.
 				MouseData new_mdata(curr_time, static_cast<short>(mouse_data.lLastX), 
 					                static_cast<short>(mouse_data.lLastY), 
 					                static_cast<short>(mouse_data.usButtonFlags));
@@ -112,8 +124,10 @@ LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARA
 						std::cout << "ALT key was pressed; exiting." << std::endl;
 						PostQuitMessage(0);
 						break;
-					} case kSaveVKey: { // TODO: save instead of just printing. Save m_data for only when m1 was down.
-						std::cout << "clearing vector." << std::endl;
+					} case kSaveVKey: {
+						// saving the movements stored in the mouse data vector.
+						WriteBufferToFile(curr_weapon);
+						std::cout << "mouse movements saved." << std::endl;
 						mouse_data_list.clear();
 						break;
 					} default: {
@@ -127,18 +141,18 @@ LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARA
 	}
 }
 
-void RunMouseRecorder(HINSTANCE &h_inst) {
+void RunMouseRecorder(HINSTANCE &h_inst, bool &is_recording) {
 	HWND window_handle;
 	CreateHiddenWindow(h_inst, window_handle);
 	RegisterInputDevices(window_handle);
-
 	std::cout << "setup complete." << std::endl;
+
 	MSG message;
 	BOOL msg_code;
 
 	// The MS MSDN-recommended way to do message loops:
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms644928(v=vs.85).aspx#creating_loop
-	while ((msg_code = GetMessage(&message, NULL, 0, 0)) != 0) {
+	while (((msg_code = GetMessage(&message, NULL, 0, 0)) != 0) && is_recording) {
 		if (msg_code == -1) {
 			return;
 		} else {
@@ -149,7 +163,9 @@ void RunMouseRecorder(HINSTANCE &h_inst) {
 }
 
 int WINAPI WinMain(HINSTANCE h_inst, HINSTANCE h_prev_inst, LPSTR lp_cmd_line, int n_cmd_show) {
+	bool is_recording = false;
+
 	// TODO: Replace this with actual stop condition, probably using ENUM states.
-	RunMouseRecorder(h_inst);
+	RunMouseRecorder(h_inst, is_recording);
 	return 0;
 }

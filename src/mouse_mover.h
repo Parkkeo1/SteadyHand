@@ -1,8 +1,8 @@
 #pragma once
-#include "pattern_parser.h"
 
-#include <Windows.h>
-#include <tuple>
+#include "mouse_pattern_data.h"
+
+PatternObject LoadPatternFromFile(const std::string &filename, const Weapon &gun_name);
 
 void MouseSetup(INPUT *input_buffer);
 void MouseMove(INPUT *input_buffer, int x_delta, int y_delta);
