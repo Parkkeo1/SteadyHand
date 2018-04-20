@@ -9,3 +9,11 @@
 - Test-recorded the AK-47 and M4-A4 spray patterns, loaded the pattern to an object, and successfully simulated the recorded movements, including the delays between each coordinate.
 - WIP implementing saving the data to a file to be loaded later, keyboard hotkeys to start/stop recording and save to file.
 - TODO: Finish the above and implement multithreading using openFrameworks's ofxThread and start integrating program into an oF project.
+
+#### April 19 - 20
+- Implemented saving the recorded mouse data to a file. 
+- Fixed some hotkey bugs (now only recognizing presses, not both presses and releases).
+- Integrated existing code into a new, oF project/solution. 
+- Got the recording functionality working, but having trouble with the WndProc function (does not like OOP), so for now I have the WinMain and WndProc functions in main.cpp. Fortunately, tested recording seemed to be successful.
+- Created two new branches- before-oop and wip-oop to mark out points of progress and to make sure I'm not pushing buggy code onto master as much.
+- TODO: re-implement the pattern parsing and mouse moving into OOP as well. Afterwards, start working on the GUI/oF stuff. Not sure if I'm still planning to multithread this program.
