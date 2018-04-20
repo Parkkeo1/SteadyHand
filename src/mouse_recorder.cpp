@@ -118,7 +118,7 @@ LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARA
 					                static_cast<short>(mouse_data.usButtonFlags));
 				mouse_data_list.push_back(new_mdata);
 
-			} else if (raw_input->header.dwType == RIM_TYPEKEYBOARD) {
+			} else if (raw_input->header.dwType == RIM_TYPEKEYBOARD && raw_input->data.keyboard.Flags == 0) {
 				switch (raw_input->data.keyboard.VKey) {
 					case kExitVKey: {
 						std::cout << "ALT key was pressed; exiting." << std::endl;
@@ -127,7 +127,7 @@ LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARA
 					} case kSaveVKey: {
 						// saving the movements stored in the mouse data vector.
 						WriteBufferToFile(curr_weapon);
-						std::cout << "mouse movements saved." << std::endl;
+						std::cout << mouse_data_list.size() << " mouse movements saved." << std::endl;
 						mouse_data_list.clear();
 						break;
 					} default: {
@@ -163,7 +163,8 @@ void RunMouseRecorder(HINSTANCE &h_inst, bool &is_recording) {
 }
 
 int WINAPI WinMain(HINSTANCE h_inst, HINSTANCE h_prev_inst, LPSTR lp_cmd_line, int n_cmd_show) {
-	bool is_recording = false;
+	bool is_recording = true;
+	curr_weapon = UMP_45;
 
 	// TODO: Replace this with actual stop condition, probably using ENUM states.
 	RunMouseRecorder(h_inst, is_recording);
