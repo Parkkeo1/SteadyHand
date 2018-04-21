@@ -50,6 +50,7 @@ public:
 
 	void RegisterInputDevices(HWND window);
 	bool CreateHiddenWindow(HINSTANCE &h_instance, HWND &window_handle);
+	void AddNewMouseData(const RAWMOUSE &m_data);
 	void WriteBufferToFile();
 	void RunMouseRecorder(HINSTANCE &h_instance, bool &is_recording);
 };

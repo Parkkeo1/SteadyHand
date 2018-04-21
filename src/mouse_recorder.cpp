@@ -17,8 +17,10 @@ const short kMouseUsage = 2;
 const short kKeyBoardUsage = 6;
 
 // default hotkey Windows Vkey codes.
-const short kExitVKey = 18; // by default it is ALT.
-const short kSaveVKey = 9; // by default it is TAB.
+//const short kExitVKey = 18; // by default it is ALT.
+//const short kSaveVKey = 9; // by default it is TAB.
+const short kExitVKey = 85; // FOR TESTING: U to exit.
+const short kSaveVKey = 86; // FOR TESTING: V to save.
 
 std::ostream& operator<<(std::ostream &os, const MouseData &m_data) {
 	os << m_data.ms_time << " " << m_data.dx << " " << m_data.dy 
@@ -75,6 +77,20 @@ bool MouseDataRecorder::CreateHiddenWindow(HINSTANCE &h_instance, HWND &window_h
 	std::cout << "Registration of the window class failed." << std::endl;
 	return false;
 }
+
+void MouseDataRecorder::AddNewMouseData(const RAWMOUSE &m_data) {
+	// code derived from:
+	// https://stackoverflow.com/a/19555298
+	long long curr_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+		std::chrono::system_clock::now().time_since_epoch()
+		).count();
+
+	MouseData new_mdata(curr_time, static_cast<short>(mouse_data.lLastX),
+		static_cast<short>(mouse_data.lLastY),
+		static_cast<short>(mouse_data.usButtonFlags));
+	mouse_data_list.push_back(new_mdata);
+}
+
 
 void MouseDataRecorder::WriteBufferToFile() {
 	std::string filename = kWeaponNames[curr_weapon] + ".txt";
@@ -150,17 +166,7 @@ LRESULT CALLBACK WndProc(HWND window_handle, UINT message, WPARAM w_param, LPARA
 			if (raw_input->header.dwType == RIM_TYPEMOUSE) {
 				auto mouse_data = raw_input->data.mouse;
 
-				// code derived from:
-				// https://stackoverflow.com/a/19555298
-				long long curr_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-					std::chrono::system_clock::now().time_since_epoch()
-					).count();
-
-				// recording new mouse movement as object.
-				MouseData new_mdata(curr_time, static_cast<short>(mouse_data.lLastX),
-					static_cast<short>(mouse_data.lLastY),
-					static_cast<short>(mouse_data.usButtonFlags));
-				mouse_recorder.get_mouse_data_list().push_back(new_mdata);
+				mouse_recorder.AddNewMouseData(mouse_data);
 
 			} else if (raw_input->header.dwType == RIM_TYPEKEYBOARD && raw_input->data.keyboard.Flags == 0) {
 				switch (raw_input->data.keyboard.VKey) {
