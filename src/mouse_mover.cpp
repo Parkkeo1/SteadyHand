@@ -12,7 +12,7 @@ PatternObject LoadPatternFromFile(const std::string &filename, const Weapon &gun
 
 		while (getline(pattern_file, file_line)) {
 			std::istringstream in_sstream(file_line);
-			std::vector<std::string> xy_info(std::istream_iterator<std::string>{in_sstream}, 
+			std::vector<std::string> xy_info(std::istream_iterator<std::string>{in_sstream},
 				std::istream_iterator<std::string>());
 			if (is_first_line) {
 				prev_time = std::stoll(xy_info[0]);
@@ -62,5 +62,5 @@ void MoveWithPattern(const PatternObject &loaded_pattern) {
 	}
 	Sleep(10);
 	// resetting crosshair back to original position.
-	MouseMove(&m_input_buf, -loaded_pattern.total_x_travel, -loaded_pattern.total_y_travel); 
+	MouseMove(&m_input_buf, -loaded_pattern.total_x_travel, -loaded_pattern.total_y_travel);
 }
