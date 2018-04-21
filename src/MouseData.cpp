@@ -1,4 +1,4 @@
-#include "RecordObj.h"
+#include "MouseData.h"
 
 std::ostream& operator<<(std::ostream &os, const MouseData &m_data) {
 	os << m_data.ms_time << " " << m_data.dx << " " << m_data.dy 
@@ -6,7 +6,7 @@ std::ostream& operator<<(std::ostream &os, const MouseData &m_data) {
 	return os;
 }
 
-void MouseRecorderObj::RegisterInputDevices(HWND window) {
+void MouseDataRecorder::RegisterInputDevices(HWND window) {
 	// code referenced from Microsoft MSDN documentation:
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#example_2
 	RAWINPUTDEVICE Rid[2];
@@ -31,7 +31,7 @@ void MouseRecorderObj::RegisterInputDevices(HWND window) {
 	std::cout << "Device registration successful." << std::endl;
 }
 
-bool MouseRecorderObj::CreateHiddenWindow(HINSTANCE &h_instance, HWND &window_handle) {
+bool MouseDataRecorder::CreateHiddenWindow(HINSTANCE &h_instance, HWND &window_handle) {
 	WNDCLASS hid_wind_class;
 
 	// code referenced from Microsoft MSDN documentation:
@@ -56,9 +56,10 @@ bool MouseRecorderObj::CreateHiddenWindow(HINSTANCE &h_instance, HWND &window_ha
 	return false;
 }
 
-void MouseRecorderObj::WriteBufferToFile() {
+void MouseDataRecorder::WriteBufferToFile() {
 	std::string filename = kWeaponNames[curr_weapon] + ".txt";
 	std::ofstream pattern_file(filename);
+	int save_counter = 0;
 
 	// booleans for keeping track of whether to save the mouse data.
 	bool to_save_curr = false;
@@ -76,12 +77,14 @@ void MouseRecorderObj::WriteBufferToFile() {
 
 		if (to_save_curr) {
 			pattern_file << m_data;
+			save_counter++;
 		}
 	}
+	std::cout << save_counter << " / " << mouse_data_list.size() << " mouse movements saved." << std::endl;
 	pattern_file.close();
 }
 
-void MouseRecorderObj::RunMouseRecorder(HINSTANCE &h_instance, bool &is_recording) {
+void MouseDataRecorder::RunMouseRecorder(HINSTANCE &h_instance, bool &is_recording) {
 	HWND window_handle; // may change this to a member variable?
 	CreateHiddenWindow(h_instance, window_handle);
 	RegisterInputDevices(window_handle);
@@ -94,6 +97,7 @@ void MouseRecorderObj::RunMouseRecorder(HINSTANCE &h_instance, bool &is_recordin
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms644928(v=vs.85).aspx#creating_loop
 	while (((msg_code = GetMessage(&message, NULL, 0, 0)) != 0) && is_recording) {
 		if (msg_code == -1) {
+			PostQuitMessage(0);
 			return;
 		} else {
 			TranslateMessage(&message);

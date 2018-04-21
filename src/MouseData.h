@@ -48,7 +48,7 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, const MouseData& m_data);
 };
 
-class MouseRecorderObj {
+class MouseDataRecorder {
 	std::vector<MouseData> mouse_data_list;
 	Weapon curr_weapon;
 	WNDPROC base_wnd_proc;

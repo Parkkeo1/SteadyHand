@@ -2,8 +2,8 @@
 #ifndef MOUSE_RECORDER_H
 #define MOUSE_RECORDER_H
 
-#include "RecordObj.h"
+#include "MouseData.h"
 
-MouseRecorderObj mouse_recorder;
+extern MouseDataRecorder mouse_recorder;
 
 #endif // !MOUSE_RECORDER_H
