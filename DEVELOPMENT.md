@@ -24,3 +24,14 @@
 - Going to merge wip-oop into master branch.
 - TODO: Implement detecting mouse left-click press while in 'move' mode so that the recoil is compensated only when user is firing the weapon in-game.
 - TODO: start working on the GUI/oF stuff, try without multithreading.
+
+
+#### April 21 - 22
+- The following changes are mostly on the new WIP branch, of-testing.
+- Successfully implemented the Crow web framework to create a HTTP endpoint server that receives and parses JSON payloads from the CSGO client to detect which weapon the player has equipped.
+- Integrated the Crow stuff into openFrameworks's ofxThread to have the server run in a separate thread while the program runs.
+- Program now automatically detects which weapon the player has equipped and modifies its "curr_pattern" pattern pointer to the appropriate (already) loaded pattern.
+- All of the available patterns are loaded into the program on startup from the patterns/ folder in the bin/ directory.
+- So far set it to recognize only three weapons: AK-47, M4-A4, M4-A1S.
+- Implemented some basic ofxDatGui GUI stuff, most notably the dropdown menu that lets the user switch between using and recording.
+- TODO: Keep integrating more of my previous code into the oF project. Flesh out GUI options. Figure out a way to switch efficiently between recording and using.
