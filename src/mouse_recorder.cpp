@@ -85,9 +85,9 @@ void MouseDataRecorder::AddNewMouseData(const RAWMOUSE &m_data) {
 		std::chrono::system_clock::now().time_since_epoch()
 		).count();
 
-	MouseData new_mdata(curr_time, static_cast<short>(mouse_data.lLastX),
-		static_cast<short>(mouse_data.lLastY),
-		static_cast<short>(mouse_data.usButtonFlags));
+	MouseData new_mdata(curr_time, static_cast<short>(m_data.lLastX),
+		static_cast<short>(m_data.lLastY),
+		static_cast<short>(m_data.usButtonFlags));
 	mouse_data_list.push_back(new_mdata);
 }
 

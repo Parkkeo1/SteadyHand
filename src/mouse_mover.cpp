@@ -1,8 +1,14 @@
 #include "mouse_mover.h"
 
+const std::set<std::string> kWeaponNameCodes = {
+	"weapon_ak47",
+	"weapon_m4a1",
+	"weapon_m4a1_silencer"
+};
+
 // method that parses a given file to load a spray pattern.
-PatternObject LoadPatternFromFile(const std::string &filename, const Weapon &gun_name) {
-	PatternObject spray_pattern(gun_name);
+PatternObject LoadPatternFromFile(const std::string &filename) {
+	PatternObject spray_pattern;
 	std::ifstream pattern_file(filename);
 	std::string file_line;
 

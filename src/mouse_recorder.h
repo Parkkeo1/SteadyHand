@@ -11,15 +11,9 @@
 #include <iterator>
 #include <string>
 #include <tuple>
+#include <set>
 
 extern const std::vector<std::string> kWeaponNames;
-
-enum Weapon {
-	AK_47 = 0,
-	M4_A4 = 1,
-	M4_A1S = 2,
-	UMP_45 = 3
-};
 
 // struct for storing mouse data from Windows raw input messages.
 struct MouseData {
