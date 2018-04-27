@@ -15,31 +15,31 @@ const std::set<std::string> kWeaponNameCodes = {
 	"weapon_m4a1_silencer"
 };
 
-void MouseMover::CreateHiddenWindow() {
-	WNDCLASS hid_wind_class;
-	HINSTANCE h_inst = GetModuleHandle(NULL);
-
-	// code referenced from Microsoft MSDN documentation:
-	// https://msdn.microsoft.com/en-us/library/ms633576(v=vs.85).aspx
-	hid_wind_class.style = 0;
-	hid_wind_class.lpfnWndProc = DefWindowProc;
-	hid_wind_class.cbClsExtra = 0;
-	hid_wind_class.cbWndExtra = 0;
-	hid_wind_class.hInstance = h_inst;
-	hid_wind_class.hIcon = NULL;
-	hid_wind_class.hCursor = NULL;
-	hid_wind_class.hbrBackground = (HBRUSH)COLOR_WINDOWFRAME;
-	hid_wind_class.lpszMenuName = NULL;
-	hid_wind_class.lpszClassName = kClassName;
-
-	if (RegisterClass(&hid_wind_class)) {
-		mouse_mover_wind = CreateWindow(kClassName, kClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, h_inst, this);
-		SetWindowLongPtr(mouse_mover_wind, GWLP_USERDATA, (LONG_PTR)this);
-		std::cout << "Window registration successful." << std::endl;
-	} else {
-		std::cout << "Window registration failed." << std::endl;
-	}
-}
+//void MouseMover::CreateHiddenWindow() {
+//	WNDCLASS hid_wind_class;
+//	HINSTANCE h_inst = GetModuleHandle(NULL);
+//
+//	// code referenced from Microsoft MSDN documentation:
+//	// https://msdn.microsoft.com/en-us/library/ms633576(v=vs.85).aspx
+//	hid_wind_class.style = 0;
+//	hid_wind_class.lpfnWndProc = DefWindowProc;
+//	hid_wind_class.cbClsExtra = 0;
+//	hid_wind_class.cbWndExtra = 0;
+//	hid_wind_class.hInstance = h_inst;
+//	hid_wind_class.hIcon = NULL;
+//	hid_wind_class.hCursor = NULL;
+//	hid_wind_class.hbrBackground = (HBRUSH)COLOR_WINDOWFRAME;
+//	hid_wind_class.lpszMenuName = NULL;
+//	hid_wind_class.lpszClassName = kClassName;
+//
+//	if (RegisterClass(&hid_wind_class)) {
+//		mouse_mover_wind = CreateWindow(kClassName, kClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, h_inst, this);
+//		SetWindowLongPtr(mouse_mover_wind, GWLP_USERDATA, (LONG_PTR)this);
+//		std::cout << "Window registration successful." << std::endl;
+//	} else {
+//		std::cout << "Window registration failed." << std::endl;
+//	}
+//}
 
 void MouseMover::RegisterMouse() {
 	// code referenced from Microsoft MSDN documentation:
@@ -100,6 +100,7 @@ LRESULT MouseMover::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 			case 1:
 				is_m_left_down = true;
 				std::cout << "m_left pressed." << std::endl;
+				MoveWithPattern();
 				break;
 			case 2:
 				is_m_left_down = false;
@@ -111,11 +112,13 @@ LRESULT MouseMover::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 		}
 
 		if (raw_input->header.dwType == RIM_TYPEKEYBOARD && raw_input->data.keyboard.Flags == 0) {
-			if (raw_input->data.keyboard.VKey == 13) {
-				is_actively_using = false;
+			if (raw_input->data.keyboard.VKey == kEnterVkey) {
+				std::cout << "ENTER key pressed." << std::endl;
+				// TODO: Fix this message loop to exit properly when user presses ENTER.
+				// Currently this exits the entire program... it should only change the state of the program.
+				PostQuitMessage(0);
 			}
 		}
-
 		break;
 	} default:
 		return DefWindowProc(mouse_mover_wind, msg, w_param, l_param);
@@ -197,34 +200,36 @@ void MouseMover::MoveWithPattern() {
 		if (is_m_left_down) {
 			MouseMove(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
 			// to make sure the pattern is replicated with appropriate delays between coordinates.
-			Sleep(std::get<0>(xy_delta));
-		}
-		else {
+			Sleep(1.5);
+		} else {
 			return;
 		}
 	}
-	Sleep(10);
+	Sleep(1000);
 	// resetting crosshair back to original position.
 	MouseMove(&m_input_buf, -curr_weapon->total_x_travel, -curr_weapon->total_y_travel);
 }
 
 void MouseMover::SetupMover() {
 	LoadAllPatterns();
-	CreateHiddenWindow();
+	SetWindowLongPtr(mouse_mover_wind, GWLP_USERDATA, (LONG_PTR)this);
 	RegisterMouse();
 	std::cout << "setup complete." << std::endl;
 }
 
 void MouseMover::RunMover() {
-	MSG message;
-	BOOL msg_code;
-
-	is_actively_using = true;
-	while (is_actively_using) {
+	// TODO: Fix this message loop to exit properly when user presses ENTER.
+	while (true) {
 		MSG message;
-		if (GetMessage(&message, NULL, 0, 0) > 0 && is_actively_using) {
-			TranslateMessage(&message);
-			DispatchMessage(&message);
+		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
+			if (message.message == WM_QUIT) {
+				break;
+			} else {
+				TranslateMessage(&message);
+				DispatchMessage(&message);
+			}
+		} else {
+			break;
 		}
 	}
 }

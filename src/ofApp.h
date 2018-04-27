@@ -7,7 +7,8 @@
 
 enum ProgramState {
 	USING = 0,
-	RECORDING = 1
+	RECORDING = 1,
+	INACTIVE = 2
 };
 
 extern const std::vector<std::string> program_states;

@@ -4,7 +4,8 @@ const std::string kGuiTitle = ">> SteadyHand <<";
 
 const std::vector<std::string> program_states = {
 	"Aim Assist Mode",
-	"Record Patterns Mode"
+	"Record Patterns Mode",
+	"Inactive"
 };
 
 // same as 0x011726.
@@ -26,8 +27,8 @@ void ofApp::setup_gui() { // NOTE: Adjust high res mode threshold in ofxDatGuiTh
 //--------------------------------------------------------------
 void ofApp::setup() {
 	ofSetBackgroundColorHex(kBackGroundColor);
-	curr_state = USING;
-	mouse_mover.SetupMover();
+	curr_state = INACTIVE;
+	mouse_mover.set_hwnd_manually(ofGetWin32Window());
 	json_server_th.startThread(true);
 	setup_gui();
 }
@@ -49,6 +50,11 @@ void ofApp::draw() {}
 void ofApp::UpdateProgramState(ofxDatGuiDropdownEvent state_change) {
 	state_change.target->toggle();
 	curr_state = static_cast<ProgramState>(state_change.child);
+
+	if (curr_state == USING) {
+		mouse_mover.SetupMover();
+		mouse_mover.RunMover();
+	}
 }
 
 

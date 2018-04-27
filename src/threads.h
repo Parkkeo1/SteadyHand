@@ -3,6 +3,7 @@
 #define THREAD
 
 #include "ofThread.h"
+#include "mouse_mover.h"
 #include "crow.h"
 #include "nlohmann/json.hpp"
 
@@ -20,5 +21,14 @@ public:
 	ServerThread() : equipped_weapon("") {}
 	std::string &get_equipped_weapon() { return equipped_weapon; }
 };
+
+//class MoverThread : public ofThread {
+//
+//public:
+//	MouseMover mouse_mover;
+//
+//	void SetupMoverThread() { mouse_mover.SetupMover(); }
+//	void threadedFunction() { mouse_mover.RunMover(); }
+//};
 
 #endif // !THREAD

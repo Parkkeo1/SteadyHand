@@ -36,7 +36,6 @@ class MouseMover {
 	PatternObject *curr_weapon;
 	std::unordered_map<std::string, PatternObject> loaded_patterns;
 
-	bool is_actively_using;
 	HWND mouse_mover_wind;
 	bool is_m_left_down;
 
@@ -52,12 +51,13 @@ class MouseMover {
 	void MoveWithPattern();
 
 public:
-	MouseMover() : curr_weapon_name("weapon_ak47"), is_actively_using(true), mouse_mover_wind(NULL), is_m_left_down(false) {};
+	MouseMover() : curr_weapon_name("weapon_ak47"), mouse_mover_wind(NULL), is_m_left_down(false) {};
 	void SetupMover();
 	void RunMover();
 	void UpdateCurrPattern();
 	std::string &get_curr_weap_name() { return curr_weapon_name; }
 	void set_curr_weap_name(const std::string &new_weap_name) { curr_weapon_name = new_weap_name; }
+	void set_hwnd_manually(HWND window_handle) { mouse_mover_wind = window_handle; }
 };
 
 #endif // !M_MOVER_H
