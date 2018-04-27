@@ -13,27 +13,38 @@ enum ProgramState {
 };
 
 extern const std::vector<std::string> program_states;
+extern const std::set<std::string> kWeaponNameCodes;
 
 class ofApp : public ofBaseApp {
 
+private:
 	ofxDatGui *steadyhand_gui;
 	
 	ServerThread json_server_th;
 	std::string curr_weapon_name;
 	PatternObject *curr_weapon_pattern;
 	ProgramState curr_state;
-
 	std::unordered_map<std::string, PatternObject> loaded_patterns;
 
-	void load_all_patterns();
+	void LoadAllPatterns();
 
-	public:
-		void setup_gui();
-		void setup();
-		void update();
-		void draw();
+	bool is_m_left_down;
+	HWND SetupHiddenWindow();
+	void RegisterInputDevices(HWND &hidden_window);
 
-		void update_state(ofxDatGuiDropdownEvent state_change);
+	void MouseMoverMain();
+	bool CheckMessageSize(LPARAM &l_param, LPBYTE &lpb, UINT &dw_size);
+	static LRESULT CALLBACK StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
+	LRESULT MouseMoverProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
+
+public:
+	void setup_gui();
+	void setup();
+	void update();
+	void draw();
+
+	void UpdateProgramState(ofxDatGuiDropdownEvent state_change);
+	
 };
 
 // customizable SteadyHand theme, based on built-in Midnight theme.

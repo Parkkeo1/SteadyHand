@@ -1,11 +1,5 @@
 #include "mouse_mover.h"
 
-const std::set<std::string> kWeaponNameCodes = {
-	"weapon_ak47",
-	"weapon_m4a1",
-	"weapon_m4a1_silencer"
-};
-
 // method that parses a given file to load a spray pattern.
 PatternObject LoadPatternFromFile(const std::string &filename) {
 	PatternObject spray_pattern;
@@ -57,16 +51,20 @@ void MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
 }
 
 // method that moves the mouse according to the weapon pattern.
-void MoveWithPattern(const PatternObject &loaded_pattern) {
+void MoveWithPattern(const PatternObject *loaded_pattern, bool &is_m_left_down) {
 	INPUT m_input_buf;
 	MouseSetup(&m_input_buf);
 
-	for (auto xy_delta : loaded_pattern.movement_coords) {
-		MouseMove(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
-		// to make sure the pattern is replicated with appropriate delays between coordinates.
-		Sleep(std::get<0>(xy_delta));
+	for (auto xy_delta : loaded_pattern->movement_coords) {
+		if (is_m_left_down) {
+			MouseMove(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
+			// to make sure the pattern is replicated with appropriate delays between coordinates.
+			Sleep(std::get<0>(xy_delta));
+		} else {
+			return;
+		}
 	}
 	Sleep(10);
 	// resetting crosshair back to original position.
-	MouseMove(&m_input_buf, -loaded_pattern.total_x_travel, -loaded_pattern.total_y_travel);
+	MouseMove(&m_input_buf, -loaded_pattern->total_x_travel, -loaded_pattern->total_y_travel);
 }

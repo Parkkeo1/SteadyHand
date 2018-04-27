@@ -13,8 +13,6 @@
 #include <tuple>
 #include <set>
 
-extern const std::set<std::string> kWeaponNameCodes;
-
 // struct for loading a spray pattern from a file to be used to move the mouse.
 struct PatternObject {
 	// <unix timestamp (ms), dx, dy>
@@ -33,6 +31,6 @@ PatternObject LoadPatternFromFile(const std::string &filename);
 
 void MouseSetup(INPUT *input_buffer);
 void MouseMove(INPUT *input_buffer, int x_delta, int y_delta);
-void MoveWithPattern(const PatternObject &loaded_pattern);
+void MoveWithPattern(const PatternObject *loaded_pattern, bool &is_m_left_down);
 
 #endif // !M_MOVER_H
