@@ -35,3 +35,9 @@
 - So far set it to recognize only three weapons: AK-47, M4-A4, M4-A1S.
 - Implemented some basic ofxDatGui GUI stuff, most notably the dropdown menu that lets the user switch between using and recording.
 - TODO: Keep integrating more of my previous code into the oF project. Flesh out GUI options. Figure out a way to switch efficiently between recording and using.
+
+#### April 26 - 27
+- Main focus is on integrating the mouse mover code into oF. Currently implemented as a thread, but may instead just opt to use objects with start/stop functions for the message loops.
+- Fixed (after hours of SO, WinAPI docs, and debugging) issues with Get/SetWindowLongPtr to recognize & register input devices appropriately.
+- WndProc functions are now object-oriented and class members in the thread class. May abandon threading for mouse moving/recording in favor of objects.
+- Current Issues to fix: GUI is somehow inaccessible while running the mouse mover thread. Make sure MoveWithPattern() does not segfault while mover thread is tracking mouse clicks.
