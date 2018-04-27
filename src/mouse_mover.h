@@ -12,6 +12,7 @@
 #include <string>
 #include <tuple>
 #include <set>
+#include <unordered_map>
 
 // struct for loading a spray pattern from a file to be used to move the mouse.
 struct PatternObject {
@@ -27,10 +28,36 @@ public:
 	int size() { return movement_coords.size(); }
 };
 
-PatternObject LoadPatternFromFile(const std::string &filename);
+extern const std::set<std::string> kWeaponNameCodes;
 
-void MouseSetup(INPUT *input_buffer);
-void MouseMove(INPUT *input_buffer, int x_delta, int y_delta);
-void MoveWithPattern(const PatternObject *loaded_pattern, bool &is_m_left_down);
+class MouseMover {
+
+	std::string curr_weapon_name;
+	PatternObject *curr_weapon;
+	std::unordered_map<std::string, PatternObject> loaded_patterns;
+
+	bool is_actively_using;
+	HWND mouse_mover_wind;
+	bool is_m_left_down;
+
+	void CreateHiddenWindow();
+	void RegisterMouse();
+	static LRESULT CALLBACK StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
+	LRESULT MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param);
+
+	PatternObject LoadPatternFromFile(const std::string &filename);
+	void LoadAllPatterns();
+	void MouseSetup(INPUT *input_buffer);
+	void MouseMove(INPUT *input_buffer, int x_delta, int y_delta);
+	void MoveWithPattern();
+
+public:
+	MouseMover() : curr_weapon_name("weapon_ak47"), is_actively_using(true), mouse_mover_wind(NULL), is_m_left_down(false) {};
+	void SetupMover();
+	void RunMover();
+	void UpdateCurrPattern();
+	std::string &get_curr_weap_name() { return curr_weapon_name; }
+	void set_curr_weap_name(const std::string &new_weap_name) { curr_weapon_name = new_weap_name; }
+};
 
 #endif // !M_MOVER_H

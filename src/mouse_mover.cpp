@@ -1,7 +1,131 @@
 #include "mouse_mover.h"
 
+const LPCWSTR kClassName = TEXT("SteadyHand");
+
+// constants for Windows API raw input device codes.
+const short kDesktopUsage = 1;
+const short kMouseUsage = 2;
+const short kKeyBoardUsage = 6;
+
+const short kEnterVkey = 13;
+
+const std::set<std::string> kWeaponNameCodes = {
+	"weapon_ak47",
+	"weapon_m4a1",
+	"weapon_m4a1_silencer"
+};
+
+void MouseMover::CreateHiddenWindow() {
+	WNDCLASS hid_wind_class;
+	HINSTANCE h_inst = GetModuleHandle(NULL);
+
+	// code referenced from Microsoft MSDN documentation:
+	// https://msdn.microsoft.com/en-us/library/ms633576(v=vs.85).aspx
+	hid_wind_class.style = 0;
+	hid_wind_class.lpfnWndProc = DefWindowProc;
+	hid_wind_class.cbClsExtra = 0;
+	hid_wind_class.cbWndExtra = 0;
+	hid_wind_class.hInstance = h_inst;
+	hid_wind_class.hIcon = NULL;
+	hid_wind_class.hCursor = NULL;
+	hid_wind_class.hbrBackground = (HBRUSH)COLOR_WINDOWFRAME;
+	hid_wind_class.lpszMenuName = NULL;
+	hid_wind_class.lpszClassName = kClassName;
+
+	if (RegisterClass(&hid_wind_class)) {
+		mouse_mover_wind = CreateWindow(kClassName, kClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, h_inst, this);
+		SetWindowLongPtr(mouse_mover_wind, GWLP_USERDATA, (LONG_PTR)this);
+		std::cout << "Window registration successful." << std::endl;
+	} else {
+		std::cout << "Window registration failed." << std::endl;
+	}
+}
+
+void MouseMover::RegisterMouse() {
+	// code referenced from Microsoft MSDN documentation:
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#example_2
+	RAWINPUTDEVICE Rid[2];
+
+	Rid[0].usUsagePage = kDesktopUsage;
+	Rid[0].usUsage = kMouseUsage;
+	Rid[0].dwFlags = RIDEV_NOLEGACY | RIDEV_INPUTSINK;
+	Rid[0].hwndTarget = mouse_mover_wind;
+
+	Rid[1].usUsagePage = kDesktopUsage;
+	Rid[1].usUsage = kKeyBoardUsage;
+	Rid[1].dwFlags = RIDEV_NOLEGACY | RIDEV_INPUTSINK;
+	Rid[1].hwndTarget = mouse_mover_wind;
+
+	if (RegisterRawInputDevices(Rid, 2, sizeof(Rid[0]))) {
+		SetWindowLongPtr(mouse_mover_wind, GWLP_WNDPROC, (LONG_PTR)StaticWinProc);
+		std::cout << "Device registration successful." << std::endl;
+	}
+	else {
+		std::cout << "Device registration failed." << std::endl;
+	}
+}
+
+// code derived from:
+// https://stackoverflow.com/a/28491549
+LRESULT MouseMover::StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
+	MouseMover *p_this = (MouseMover*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
+	if (!p_this) {
+		return DefWindowProc(hwnd, msg, w_param, l_param);
+	}
+
+	return p_this->MouseMoverProc(msg, w_param, l_param);
+}
+
+LRESULT MouseMover::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
+	switch (msg) {
+	case WM_INPUT: {
+		UINT dw_size;
+		GetRawInputData((HRAWINPUT)l_param, RID_INPUT, NULL, &dw_size, sizeof(RAWINPUTHEADER));
+		LPBYTE lpb = new BYTE[dw_size];
+		if (lpb == NULL) {
+			return -1;
+		}
+
+		if (GetRawInputData((HRAWINPUT)l_param, RID_INPUT, lpb, &dw_size, sizeof(RAWINPUTHEADER)) != dw_size) {
+			std::cout << "GetRawInputData does not return correct size !" << std::endl;
+			return -1;
+		}
+		// size of message/data has been confirmed to be correct.
+		RAWINPUT* raw_input = (RAWINPUT*)lpb;
+
+		if (raw_input->header.dwType == RIM_TYPEMOUSE) {
+			std::cout << "mouse input received" << std::endl;
+			switch (raw_input->data.mouse.usButtonFlags) {
+			case 1:
+				is_m_left_down = true;
+				std::cout << "m_left pressed." << std::endl;
+				break;
+			case 2:
+				is_m_left_down = false;
+				std::cout << "m_left released." << std::endl;
+				break;
+			default:
+				break;
+			}
+		}
+
+		if (raw_input->header.dwType == RIM_TYPEKEYBOARD && raw_input->data.keyboard.Flags == 0) {
+			if (raw_input->data.keyboard.VKey == 13) {
+				is_actively_using = false;
+			}
+		}
+
+		break;
+	} default:
+		return DefWindowProc(mouse_mover_wind, msg, w_param, l_param);
+	}
+
+	return 0;
+}
+
 // method that parses a given file to load a spray pattern.
-PatternObject LoadPatternFromFile(const std::string &filename) {
+PatternObject MouseMover::LoadPatternFromFile(const std::string &filename) {
 	PatternObject spray_pattern;
 	std::ifstream pattern_file(filename);
 	std::string file_line;
@@ -24,14 +148,28 @@ PatternObject LoadPatternFromFile(const std::string &filename) {
 			spray_pattern.total_y_travel += std::stoi(xy_info[2]);
 			prev_time = std::stoll(xy_info[0]);
 		}
-	} else {
+	}
+	else {
 		std::cout << "file not found" << std::endl;
 	}
 	return spray_pattern;
 }
 
+void MouseMover::LoadAllPatterns() {
+	for (auto &weapon_name : kWeaponNameCodes) {
+		loaded_patterns.insert({ weapon_name, LoadPatternFromFile("patterns/" + weapon_name + ".txt") });
+	}
+	// setting defaults.
+	curr_weapon_name = *kWeaponNameCodes.begin();
+	try {
+		curr_weapon = &loaded_patterns.at(curr_weapon_name);
+	} catch (const std::exception) {
+		std::cout << "the pattern map was not initialized correctly." << std::endl;
+	}
+}
+
 // method to setup the buffer before using SendInput.
-void MouseSetup(INPUT *input_buffer) {
+void MouseMover::MouseSetup(INPUT *input_buffer) {
 	input_buffer->type = INPUT_MOUSE;
 	input_buffer->mi.dx = 0;
 	input_buffer->mi.dy = 0;
@@ -43,7 +181,7 @@ void MouseSetup(INPUT *input_buffer) {
 
 // code referenced from Microsoft MSDN:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms646310(v=vs.85).aspx
-void MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
+void MouseMover::MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
 	input_buffer->mi.dx = x_delta;
 	input_buffer->mi.dy = y_delta;
 	input_buffer->mi.dwFlags = MOUSEEVENTF_MOVE;
@@ -51,20 +189,47 @@ void MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
 }
 
 // method that moves the mouse according to the weapon pattern.
-void MoveWithPattern(const PatternObject *loaded_pattern, bool &is_m_left_down) {
+void MouseMover::MoveWithPattern() {
 	INPUT m_input_buf;
 	MouseSetup(&m_input_buf);
 
-	for (auto xy_delta : loaded_pattern->movement_coords) {
+	for (auto xy_delta : curr_weapon->movement_coords) {
 		if (is_m_left_down) {
 			MouseMove(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
 			// to make sure the pattern is replicated with appropriate delays between coordinates.
 			Sleep(std::get<0>(xy_delta));
-		} else {
+		}
+		else {
 			return;
 		}
 	}
 	Sleep(10);
 	// resetting crosshair back to original position.
-	MouseMove(&m_input_buf, -loaded_pattern->total_x_travel, -loaded_pattern->total_y_travel);
+	MouseMove(&m_input_buf, -curr_weapon->total_x_travel, -curr_weapon->total_y_travel);
+}
+
+void MouseMover::SetupMover() {
+	LoadAllPatterns();
+	CreateHiddenWindow();
+	RegisterMouse();
+	std::cout << "setup complete." << std::endl;
+}
+
+void MouseMover::RunMover() {
+	MSG message;
+	BOOL msg_code;
+
+	is_actively_using = true;
+	while (is_actively_using) {
+		MSG message;
+		if (GetMessage(&message, NULL, 0, 0) > 0 && is_actively_using) {
+			TranslateMessage(&message);
+			DispatchMessage(&message);
+		}
+	}
+}
+
+// loading new pattern according to newly equipped weapon.
+void MouseMover::UpdateCurrPattern() {
+	curr_weapon = &loaded_patterns.at(curr_weapon_name);
 }

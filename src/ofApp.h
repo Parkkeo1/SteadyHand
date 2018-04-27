@@ -1,7 +1,5 @@
 #pragma once
 
-#include <map>
-
 #include "ofMain.h"
 #include "ofxDatGui.h"
 #include "threads.h"
@@ -13,7 +11,6 @@ enum ProgramState {
 };
 
 extern const std::vector<std::string> program_states;
-extern const std::set<std::string> kWeaponNameCodes;
 
 class ofApp : public ofBaseApp {
 
@@ -21,14 +18,9 @@ private:
 	ofxDatGui *steadyhand_gui;
 	
 	ServerThread json_server_th;
-	MoverThread mouse_mover;
+	MouseMover mouse_mover;
 
-	std::string curr_weapon_name;
-	PatternObject *curr_weapon_pattern;
 	ProgramState curr_state;
-	std::unordered_map<std::string, PatternObject> loaded_patterns;
-
-	void LoadAllPatterns();
 
 public:
 	void setup_gui();
