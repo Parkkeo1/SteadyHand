@@ -54,6 +54,7 @@ void MoverThread::CreateHiddenWindow() {
 
 	if (RegisterClass(&hid_wind_class)) {
 		mouse_mover_wind = CreateWindow(kClassName, kClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, h_inst, this);
+		SetWindowLongPtr(mouse_mover_wind, GWLP_USERDATA, (LONG_PTR)this);
 		std::cout << "Window registration successful." << std::endl;
 	} else {
 		std::cout << "Window registration failed." << std::endl;
@@ -84,6 +85,7 @@ void MoverThread::RegisterMouse() {
 }
 
 void MoverThread::SetupMover() {
+	mouse_mover_wind = NULL;
 	is_m_left_down = false;
 	CreateHiddenWindow();
 	RegisterMouse();
@@ -111,31 +113,13 @@ void MoverThread::threadedFunction() {
 // code derived from:
 // https://stackoverflow.com/a/28491549
 LRESULT MoverThread::StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
-	/*MoverThread *p_this = NULL;
-
-	if (msg == WM_NCCREATE) {
-		std::cout << "create message received." << std::endl;
-		CREATESTRUCT *p_create = (CREATESTRUCT*)l_param;
-		p_this = (MoverThread*)p_create->lpCreateParams;
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)p_this);
-		p_this->mouse_mover_wind = hwnd;
-		p_this->RegisterMouse();
-	} else {
-		p_this = (MoverThread*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	}
-
-	if (p_this) {
-		return p_this->MouseMoverProc(msg, w_param, l_param);
-	} else {
-		return DefWindowProc(hwnd, msg, w_param, l_param);
-	}*/
+	MoverThread *p_this = (MoverThread*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	
-	if (msg == WM_NCCREATE) {
-		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)((CREATESTRUCT*)l_param)->lpCreateParams);
-		return TRUE;
+	if (!p_this) {
+		return DefWindowProc(hwnd, msg, w_param, l_param);
 	}
 
-	return ((MoverThread*)GetWindowLongPtr(hwnd, GWLP_USERDATA))->MouseMoverProc(msg, w_param, l_param);
+	return p_this->MouseMoverProc(msg, w_param, l_param);
 }
 
 LRESULT MoverThread::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
