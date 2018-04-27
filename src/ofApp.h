@@ -4,7 +4,7 @@
 
 #include "ofMain.h"
 #include "ofxDatGui.h"
-#include "server_thread.h"
+#include "threads.h"
 #include "mouse_mover.h"
 
 enum ProgramState {
@@ -21,21 +21,14 @@ private:
 	ofxDatGui *steadyhand_gui;
 	
 	ServerThread json_server_th;
+	MoverThread mouse_mover;
+
 	std::string curr_weapon_name;
 	PatternObject *curr_weapon_pattern;
 	ProgramState curr_state;
 	std::unordered_map<std::string, PatternObject> loaded_patterns;
 
 	void LoadAllPatterns();
-
-	bool is_m_left_down;
-	HWND SetupHiddenWindow();
-	void RegisterInputDevices(HWND &hidden_window);
-
-	void MouseMoverMain();
-	bool CheckMessageSize(LPARAM &l_param, LPBYTE &lpb, UINT &dw_size);
-	static LRESULT CALLBACK StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
-	LRESULT MouseMoverProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
 
 public:
 	void setup_gui();
@@ -44,7 +37,6 @@ public:
 	void draw();
 
 	void UpdateProgramState(ofxDatGuiDropdownEvent state_change);
-	
 };
 
 // customizable SteadyHand theme, based on built-in Midnight theme.

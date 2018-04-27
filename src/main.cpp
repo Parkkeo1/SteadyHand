@@ -10,5 +10,6 @@ int WINAPI WinMain(HINSTANCE h_inst, HINSTANCE h_prev_inst, LPSTR lp_cmd_line, i
 	// this kicks off the running of my app
 	// can be OF_WINDOW or OF_FULLSCREEN
 	// pass in width and height too:
-	ofRunApp(new ofApp());
+	ofApp *steady_hand = new ofApp();
+	ofRunApp(steady_hand);
 }
