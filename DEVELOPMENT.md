@@ -41,3 +41,12 @@
 - Fixed (after hours of SO, WinAPI docs, and debugging) issues with Get/SetWindowLongPtr to recognize & register input devices appropriately.
 - WndProc functions are now object-oriented and class members in the thread class. May abandon threading for mouse moving/recording in favor of objects.
 - Current Issues to fix: GUI is somehow inaccessible while running the mouse mover thread. Make sure MoveWithPattern() does not segfault while mover thread is tracking mouse clicks.
+
+#### April 27 (Cont.)
+- Changed implementation of mouse mover to OOP instead of threads. Still trying to figure out how to exit safely/correctly from the message loop without exiting the entire application.
+- Also having issue where the message loop (where the program tracks my mouse movements/clicks) has full control of the window and thus doesnt let me interact with the GUI window.
+- Successfully using oF GUI window (instead of a hidden one) to hook to the mouse movements (fewer windows needed).
+- Integrated MoveWithPattern to new WndProc functions for mouse mover. Program now executes the pattern upon m_left press.
+- Uploaded demo video for code review checkpoint: https://youtu.be/6U3dU2RN2sM
+- TODOs: Fix Window control issue and switching between states. Thread-ify MoveWithPattern stuff to make the recoil control respond to mid-spray m_left releases (when I release m1 during a spray it should ideally stop controlling).
+- TODOs: Manually record more patterns using MouseMeat and test recoil control with different weapons on the fly.
