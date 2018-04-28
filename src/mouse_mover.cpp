@@ -7,39 +7,17 @@ const short kDesktopUsage = 1;
 const short kMouseUsage = 2;
 const short kKeyBoardUsage = 6;
 
+// Windows's virtual keyboard key for the ENTER key.
 const short kEnterVkey = 13;
+
+const short kResetDelay = 1000;
+const short kM4Delay = 1.5;
 
 const std::set<std::string> kWeaponNameCodes = {
 	"weapon_ak47",
 	"weapon_m4a1",
 	"weapon_m4a1_silencer"
 };
-
-//void MouseMover::CreateHiddenWindow() {
-//	WNDCLASS hid_wind_class;
-//	HINSTANCE h_inst = GetModuleHandle(NULL);
-//
-//	// code referenced from Microsoft MSDN documentation:
-//	// https://msdn.microsoft.com/en-us/library/ms633576(v=vs.85).aspx
-//	hid_wind_class.style = 0;
-//	hid_wind_class.lpfnWndProc = DefWindowProc;
-//	hid_wind_class.cbClsExtra = 0;
-//	hid_wind_class.cbWndExtra = 0;
-//	hid_wind_class.hInstance = h_inst;
-//	hid_wind_class.hIcon = NULL;
-//	hid_wind_class.hCursor = NULL;
-//	hid_wind_class.hbrBackground = (HBRUSH)COLOR_WINDOWFRAME;
-//	hid_wind_class.lpszMenuName = NULL;
-//	hid_wind_class.lpszClassName = kClassName;
-//
-//	if (RegisterClass(&hid_wind_class)) {
-//		mouse_mover_wind = CreateWindow(kClassName, kClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, h_inst, this);
-//		SetWindowLongPtr(mouse_mover_wind, GWLP_USERDATA, (LONG_PTR)this);
-//		std::cout << "Window registration successful." << std::endl;
-//	} else {
-//		std::cout << "Window registration failed." << std::endl;
-//	}
-//}
 
 void MouseMover::RegisterMouse() {
 	// code referenced from Microsoft MSDN documentation:
@@ -59,8 +37,7 @@ void MouseMover::RegisterMouse() {
 	if (RegisterRawInputDevices(Rid, 2, sizeof(Rid[0]))) {
 		SetWindowLongPtr(mouse_mover_wind, GWLP_WNDPROC, (LONG_PTR)StaticWinProc);
 		std::cout << "Device registration successful." << std::endl;
-	}
-	else {
+	} else {
 		std::cout << "Device registration failed." << std::endl;
 	}
 }
@@ -95,7 +72,6 @@ LRESULT MouseMover::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 		RAWINPUT* raw_input = (RAWINPUT*)lpb;
 
 		if (raw_input->header.dwType == RIM_TYPEMOUSE) {
-			std::cout << "mouse input received" << std::endl;
 			switch (raw_input->data.mouse.usButtonFlags) {
 			case 1:
 				is_m_left_down = true;
@@ -158,19 +134,6 @@ PatternObject MouseMover::LoadPatternFromFile(const std::string &filename) {
 	return spray_pattern;
 }
 
-void MouseMover::LoadAllPatterns() {
-	for (auto &weapon_name : kWeaponNameCodes) {
-		loaded_patterns.insert({ weapon_name, LoadPatternFromFile("patterns/" + weapon_name + ".txt") });
-	}
-	// setting defaults.
-	curr_weapon_name = *kWeaponNameCodes.begin();
-	try {
-		curr_weapon = &loaded_patterns.at(curr_weapon_name);
-	} catch (const std::exception) {
-		std::cout << "the pattern map was not initialized correctly." << std::endl;
-	}
-}
-
 // method to setup the buffer before using SendInput.
 void MouseMover::MouseSetup(INPUT *input_buffer) {
 	input_buffer->type = INPUT_MOUSE;
@@ -199,19 +162,31 @@ void MouseMover::MoveWithPattern() {
 	for (auto xy_delta : curr_weapon->movement_coords) {
 		if (is_m_left_down) {
 			MouseMove(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
-			// to make sure the pattern is replicated with appropriate delays between coordinates.
-			Sleep(1.5);
+			Sleep(kM4Delay);
 		} else {
 			return;
 		}
 	}
-	Sleep(1000);
+	Sleep(kResetDelay);
 	// resetting crosshair back to original position.
 	MouseMove(&m_input_buf, -curr_weapon->total_x_travel, -curr_weapon->total_y_travel);
 }
 
+void MouseMover::LoadAllPatterns() {
+	for (auto &weapon_name : kWeaponNameCodes) {
+		loaded_patterns.insert({ weapon_name, LoadPatternFromFile("patterns/" + weapon_name + ".txt") });
+	}
+	// setting defaults.
+	curr_weapon_name = *kWeaponNameCodes.begin();
+	try {
+		curr_weapon = &loaded_patterns.at(curr_weapon_name);
+	}
+	catch (const std::exception) {
+		std::cout << "the pattern map was not initialized correctly." << std::endl;
+	}
+}
+
 void MouseMover::SetupMover() {
-	LoadAllPatterns();
 	SetWindowLongPtr(mouse_mover_wind, GWLP_USERDATA, (LONG_PTR)this);
 	RegisterMouse();
 	std::cout << "setup complete." << std::endl;

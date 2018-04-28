@@ -78,6 +78,33 @@ bool MouseDataRecorder::CreateHiddenWindow(HINSTANCE &h_instance, HWND &window_h
 	return false;
 }
 
+// potentially useful legacy code from MouseMover.
+//void MouseMover::CreateHiddenWindow() {
+//	WNDCLASS hid_wind_class;
+//	HINSTANCE h_inst = GetModuleHandle(NULL);
+//
+//	// code referenced from Microsoft MSDN documentation:
+//	// https://msdn.microsoft.com/en-us/library/ms633576(v=vs.85).aspx
+//	hid_wind_class.style = 0;
+//	hid_wind_class.lpfnWndProc = DefWindowProc;
+//	hid_wind_class.cbClsExtra = 0;
+//	hid_wind_class.cbWndExtra = 0;
+//	hid_wind_class.hInstance = h_inst;
+//	hid_wind_class.hIcon = NULL;
+//	hid_wind_class.hCursor = NULL;
+//	hid_wind_class.hbrBackground = (HBRUSH)COLOR_WINDOWFRAME;
+//	hid_wind_class.lpszMenuName = NULL;
+//	hid_wind_class.lpszClassName = kClassName;
+//
+//	if (RegisterClass(&hid_wind_class)) {
+//		mouse_mover_wind = CreateWindow(kClassName, kClassName, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, h_inst, this);
+//		SetWindowLongPtr(mouse_mover_wind, GWLP_USERDATA, (LONG_PTR)this);
+//		std::cout << "Window registration successful." << std::endl;
+//	} else {
+//		std::cout << "Window registration failed." << std::endl;
+//	}
+//}
+
 void MouseDataRecorder::AddNewMouseData(const RAWMOUSE &m_data) {
 	// code derived from:
 	// https://stackoverflow.com/a/19555298

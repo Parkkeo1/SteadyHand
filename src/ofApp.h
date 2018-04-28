@@ -17,11 +17,13 @@ class ofApp : public ofBaseApp {
 
 private:
 	ofxDatGui *steadyhand_gui;
+	ofxDatGuiLabel *gui_using_weapon;
 	
 	ServerThread json_server_th;
 	MouseMover mouse_mover;
 
 	ProgramState curr_state;
+	std::string curr_weap_name;
 
 public:
 	void setup_gui();
