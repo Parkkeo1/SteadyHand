@@ -1,7 +1,7 @@
 #include "mouse_handler.h"
 
 const LPCWSTR kClassName = TEXT("SteadyHand");
-const std::string kNoWeapon = "no weapon";
+const std::string kInactive = "Inactive";
 
 // constants for Windows API raw input device codes.
 const short kDesktopUsage = 1;
@@ -60,8 +60,7 @@ void MouseHandler::Run() {
 		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
 			if (message.message == WM_QUIT) {
 				break;
-			}
-			else {
+			} else {
 				TranslateMessage(&message);
 				DispatchMessage(&message);
 			}

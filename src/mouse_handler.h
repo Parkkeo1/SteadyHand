@@ -17,7 +17,7 @@
 #include <functional>
 #include <atomic>
 
-extern const std::string kNoWeapon;
+extern const std::string kInactive;
 
 class MouseHandler {
 
@@ -31,7 +31,7 @@ protected:
 	virtual LRESULT ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) = 0;
 
 public:
-	MouseHandler() : curr_weapon_name(kNoWeapon), input_window(NULL) {}
+	MouseHandler() : curr_weapon_name(kInactive), input_window(NULL) {}
 
 	std::string &get_curr_weap_name() { return curr_weapon_name; }
 	void set_curr_weap_name(const std::string &new_weap_name) { curr_weapon_name = new_weap_name; }

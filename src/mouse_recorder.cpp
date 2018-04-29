@@ -23,7 +23,7 @@ void MouseRecorder::AddNewMouseData(const RAWMOUSE &m_data) {
 }
 
 void MouseRecorder::WriteBufferToFile() {
-	if (curr_weapon_name != kNoWeapon) {
+	if (curr_weapon_name != kInactive) {
 		std::string filename = "patterns/" + curr_weapon_name + ".txt"; // for testing.
 		std::ofstream pattern_file(filename);
 		int save_counter = 0;
