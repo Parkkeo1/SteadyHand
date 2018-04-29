@@ -5,8 +5,7 @@ const std::string kCurrWeaponPre = "Currently Equipped: ";
 
 const std::vector<std::string> program_states = {
 	"Aim Assist Mode",
-	"Record Patterns Mode",
-	"Inactive"
+	"Record Patterns Mode"
 };
 
 // same as 0x011726.
