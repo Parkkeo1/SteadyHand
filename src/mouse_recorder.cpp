@@ -23,31 +23,35 @@ void MouseRecorder::AddNewMouseData(const RAWMOUSE &m_data) {
 }
 
 void MouseRecorder::WriteBufferToFile() {
-	std::string filename = "patterns/" + curr_weapon_name + ".txt"; // for testing.
-	std::ofstream pattern_file(filename);
-	int save_counter = 0;
+	if (curr_weapon_name != kNoWeapon) {
+		std::string filename = "patterns/" + curr_weapon_name + ".txt"; // for testing.
+		std::ofstream pattern_file(filename);
+		int save_counter = 0;
 
-	// keeping track of whether/when to save the mouse data.
-	bool to_save_curr = false;
-	for (MouseData m_data : mouse_data_buf) {
-		switch(m_data.mleft_code) {
-		case 1:
-			to_save_curr = true;
-			break;
-		case 2:
-			to_save_curr = false;
-			break;
-		default:
-			break;
-		}
+		// keeping track of whether/when to save the mouse data.
+		bool to_save_curr = false;
+		for (MouseData m_data : mouse_data_buf) {
+			switch (m_data.mleft_code) {
+				case 1:
+					to_save_curr = true;
+					break;
+				case 2:
+					to_save_curr = false;
+					break;
+				default:
+					break;
+			}
 
-		if (to_save_curr) {
-			pattern_file << m_data;
-			save_counter++;
+			if (to_save_curr) {
+				pattern_file << m_data;
+				save_counter++;
+			}
 		}
+		std::cout << save_counter << " / " << mouse_data_buf.size() << " mouse movements saved." << std::endl;
+		pattern_file.close();
+	} else {
+		std::cout << "No Weapon Detected. Did not save to file." << std::endl;
 	}
-	std::cout << save_counter << " / " << mouse_data_buf.size() << " mouse movements saved." << std::endl;
-	pattern_file.close();
 }
 
 LRESULT MouseRecorder::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
@@ -82,6 +86,7 @@ LRESULT MouseRecorder::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 					} case kSaveVKey: {
 						WriteBufferToFile();
 						mouse_data_buf.clear();
+						std::cout << "Mouse Data Buffer Cleared." << std::endl;
 						break;
 					} default: {
 						break;

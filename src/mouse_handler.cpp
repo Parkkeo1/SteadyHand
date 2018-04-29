@@ -1,6 +1,7 @@
 #include "mouse_handler.h"
 
 const LPCWSTR kClassName = TEXT("SteadyHand");
+const std::string kNoWeapon = "no weapon";
 
 // constants for Windows API raw input device codes.
 const short kDesktopUsage = 1;
@@ -53,15 +54,19 @@ void MouseHandler::Setup() {
 }
 
 void MouseHandler::Run() {
+	// TODO: Fix this message loop to exit properly when user presses ENTER.
 	while (true) {
 		MSG message;
 		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
 			if (message.message == WM_QUIT) {
 				break;
-			} else {
+			}
+			else {
 				TranslateMessage(&message);
 				DispatchMessage(&message);
 			}
+		} else {
+			break;
 		}
 	}
 }
