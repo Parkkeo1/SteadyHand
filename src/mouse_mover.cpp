@@ -10,8 +10,8 @@ const short kKeyBoardUsage = 6;
 // Windows's virtual keyboard key for the ENTER key.
 const short kEnterVkey = 13;
 
-const short kResetDelay = 1000;
-const short kM4Delay = 1.5;
+const short kResetDelay = 500;
+const short kManualDelay = 1;
 
 const std::set<std::string> kWeaponNameCodes = {
 	"weapon_ak47",
@@ -75,14 +75,11 @@ LRESULT MouseMover::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 			switch (raw_input->data.mouse.usButtonFlags) {
 				case 1: {
 					is_m_left_down = true;
-					std::cout << "m_left pressed." << std::endl;
-
 					std::thread pattern_thread = std::thread(MoveWithPattern, curr_weapon, std::ref(is_m_left_down));
 					pattern_thread.detach();
 					break;
 				} case 2: {
 					is_m_left_down = false;
-					std::cout << "m_left released." << std::endl;
 					break;
 				} default: {
 					break;
@@ -204,17 +201,20 @@ void MoveWithPattern(const PatternObject *loaded_pattern, std::atomic<bool> &is_
 	INPUT m_input_buf;
 	MouseSetup(&m_input_buf);
 
+	int x_total_dist = 0;
+	int y_total_dist = 0;
+
 	for (auto xy_delta : loaded_pattern->movement_coords) {
-		std::cout << is_firing << std::endl;
 		if (is_firing) {
 			MouseMove(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
-			Sleep(1);
-		}
-		else {
-			return;
+			x_total_dist += std::get<1>(xy_delta);
+			y_total_dist += std::get<2>(xy_delta);
+			Sleep(kManualDelay);
+		} else {
+			break;
 		}
 	}
 	Sleep(kResetDelay);
 	// resetting crosshair back to original position.
-	MouseMove(&m_input_buf, -loaded_pattern->total_x_travel, -loaded_pattern->total_y_travel);
+	MouseMove(&m_input_buf, -x_total_dist, -y_total_dist);
 }
