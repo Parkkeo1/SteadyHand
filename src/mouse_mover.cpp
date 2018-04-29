@@ -56,48 +56,48 @@ LRESULT MouseMover::StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_
 
 LRESULT MouseMover::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 	switch (msg) {
-	case WM_INPUT: {
-		UINT dw_size;
-		GetRawInputData((HRAWINPUT)l_param, RID_INPUT, NULL, &dw_size, sizeof(RAWINPUTHEADER));
-		LPBYTE lpb = new BYTE[dw_size];
-		if (lpb == NULL) {
-			return -1;
-		}
+		case WM_INPUT: {
+			UINT dw_size;
+			GetRawInputData((HRAWINPUT)l_param, RID_INPUT, NULL, &dw_size, sizeof(RAWINPUTHEADER));
+			LPBYTE lpb = new BYTE[dw_size];
+			if (lpb == NULL) {
+				return -1;
+			}
 
-		if (GetRawInputData((HRAWINPUT)l_param, RID_INPUT, lpb, &dw_size, sizeof(RAWINPUTHEADER)) != dw_size) {
-			std::cout << "GetRawInputData does not return correct size !" << std::endl;
-			return -1;
-		}
-		// size of message/data has been confirmed to be correct.
-		RAWINPUT* raw_input = (RAWINPUT*)lpb;
+			if (GetRawInputData((HRAWINPUT)l_param, RID_INPUT, lpb, &dw_size, sizeof(RAWINPUTHEADER)) != dw_size) {
+				std::cout << "GetRawInputData does not return correct size !" << std::endl;
+				return -1;
+			}
+			// size of message/data has been confirmed to be correct.
+			RAWINPUT* raw_input = (RAWINPUT*)lpb;
 
-		if (raw_input->header.dwType == RIM_TYPEMOUSE) {
-			switch (raw_input->data.mouse.usButtonFlags) {
-				case 1: {
-					is_m_left_down = true;
-					std::thread pattern_thread = std::thread(MoveWithPattern, curr_weapon, std::ref(is_m_left_down));
-					pattern_thread.detach();
-					break;
-				} case 2: {
-					is_m_left_down = false;
-					break;
-				} default: {
-					break;
+			if (raw_input->header.dwType == RIM_TYPEMOUSE) {
+				switch (raw_input->data.mouse.usButtonFlags) {
+					case 1: {
+						is_m_left_down = true;
+						std::thread pattern_thread = std::thread(MoveWithPattern, curr_weapon, std::ref(is_m_left_down));
+						pattern_thread.detach();
+						break;
+					} case 2: {
+						is_m_left_down = false;
+						break;
+					} default: {
+						break;
+					}
 				}
 			}
-		}
 
-		if (raw_input->header.dwType == RIM_TYPEKEYBOARD && raw_input->data.keyboard.Flags == 0) {
-			if (raw_input->data.keyboard.VKey == kEnterVkey) {
-				std::cout << "ENTER key pressed." << std::endl;
-				// TODO: Fix this message loop to exit properly when user presses ENTER.
-				// Currently this exits the entire program... it should only change the state of the program.
-				PostQuitMessage(0);
+			if (raw_input->header.dwType == RIM_TYPEKEYBOARD && raw_input->data.keyboard.Flags == 0) {
+				if (raw_input->data.keyboard.VKey == kEnterVkey) {
+					std::cout << "ENTER key pressed." << std::endl;
+					// TODO: Fix this message loop to exit properly when user presses ENTER.
+					// Currently this exits the entire program... it should only change the state of the program.
+					PostQuitMessage(0);
+				}
 			}
-		}
-		break;
-	} default:
-		return DefWindowProc(mouse_mover_wind, msg, w_param, l_param);
+			break;
+		} default:
+			return DefWindowProc(mouse_mover_wind, msg, w_param, l_param);
 	}
 
 	return 0;
@@ -123,12 +123,9 @@ PatternObject MouseMover::LoadPatternFromFile(const std::string &filename) {
 			}
 
 			spray_pattern.movement_coords.push_back({ std::stoll(xy_info[0]) - prev_time, std::stoi(xy_info[1]), std::stoi(xy_info[2]) });
-			spray_pattern.total_x_travel += std::stoi(xy_info[1]);
-			spray_pattern.total_y_travel += std::stoi(xy_info[2]);
 			prev_time = std::stoll(xy_info[0]);
 		}
-	}
-	else {
+	} else {
 		std::cout << "file not found" << std::endl;
 	}
 	return spray_pattern;

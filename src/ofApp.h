@@ -4,6 +4,7 @@
 #include "ofxDatGui.h"
 #include "threads.h"
 #include "mouse_mover.h"
+#include "mouse_recorder.h"
 
 enum ProgramState {
 	USING = 0,
@@ -17,13 +18,14 @@ class ofApp : public ofBaseApp {
 
 private:
 	ofxDatGui *steadyhand_gui;
-	ofxDatGuiLabel *gui_using_weapon;
+	ofxDatGuiLabel *gui_curr_weapon;
+	ofxDatGuiLabel *gui_recording_weapon;
 	
 	ServerThread json_server_th;
 	MouseMover mouse_mover;
+	MouseRecorder mouse_recorder;
 
 	ProgramState curr_state;
-	std::string curr_weap_name;
 
 public:
 	void setup_gui();

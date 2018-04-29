@@ -21,11 +21,6 @@
 struct PatternObject {
 	// <unix timestamp (ms), dx, dy>
 	std::vector<std::tuple<int, int, int>> movement_coords;
-	// used in resetting the xhair back to center.
-	int total_x_travel;
-	int total_y_travel;
-
-	PatternObject() : total_x_travel(0), total_y_travel(0) {};
 
 public:
 	int size() { return movement_coords.size(); }
