@@ -22,13 +22,4 @@ public:
 	std::string &get_equipped_weapon() { return equipped_weapon; }
 };
 
-//class MoverThread : public ofThread {
-//
-//public:
-//	MouseMover mouse_mover;
-//
-//	void SetupMoverThread() { mouse_mover.SetupMover(); }
-//	void threadedFunction() { mouse_mover.RunMover(); }
-//};
-
 #endif // !THREAD

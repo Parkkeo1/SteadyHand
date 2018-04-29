@@ -73,17 +73,20 @@ LRESULT MouseMover::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 
 		if (raw_input->header.dwType == RIM_TYPEMOUSE) {
 			switch (raw_input->data.mouse.usButtonFlags) {
-			case 1:
-				is_m_left_down = true;
-				std::cout << "m_left pressed." << std::endl;
-				MoveWithPattern();
-				break;
-			case 2:
-				is_m_left_down = false;
-				std::cout << "m_left released." << std::endl;
-				break;
-			default:
-				break;
+				case 1: {
+					is_m_left_down = true;
+					std::cout << "m_left pressed." << std::endl;
+
+					std::thread pattern_thread = std::thread(MoveWithPattern, curr_weapon, std::ref(is_m_left_down));
+					pattern_thread.detach();
+					break;
+				} case 2: {
+					is_m_left_down = false;
+					std::cout << "m_left released." << std::endl;
+					break;
+				} default: {
+					break;
+				}
 			}
 		}
 
@@ -134,44 +137,6 @@ PatternObject MouseMover::LoadPatternFromFile(const std::string &filename) {
 	return spray_pattern;
 }
 
-// method to setup the buffer before using SendInput.
-void MouseMover::MouseSetup(INPUT *input_buffer) {
-	input_buffer->type = INPUT_MOUSE;
-	input_buffer->mi.dx = 0;
-	input_buffer->mi.dy = 0;
-	input_buffer->mi.mouseData = 0;
-	input_buffer->mi.dwFlags = MOUSEEVENTF_MOVE;
-	input_buffer->mi.time = 0;
-	input_buffer->mi.dwExtraInfo = 0;
-}
-
-// code referenced from Microsoft MSDN:
-// https://msdn.microsoft.com/en-us/library/windows/desktop/ms646310(v=vs.85).aspx
-void MouseMover::MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
-	input_buffer->mi.dx = x_delta;
-	input_buffer->mi.dy = y_delta;
-	input_buffer->mi.dwFlags = MOUSEEVENTF_MOVE;
-	SendInput(1, input_buffer, sizeof(INPUT));
-}
-
-// method that moves the mouse according to the weapon pattern.
-void MouseMover::MoveWithPattern() {
-	INPUT m_input_buf;
-	MouseSetup(&m_input_buf);
-
-	for (auto xy_delta : curr_weapon->movement_coords) {
-		if (is_m_left_down) {
-			MouseMove(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
-			Sleep(kM4Delay);
-		} else {
-			return;
-		}
-	}
-	Sleep(kResetDelay);
-	// resetting crosshair back to original position.
-	MouseMove(&m_input_buf, -curr_weapon->total_x_travel, -curr_weapon->total_y_travel);
-}
-
 void MouseMover::LoadAllPatterns() {
 	for (auto &weapon_name : kWeaponNameCodes) {
 		loaded_patterns.insert({ weapon_name, LoadPatternFromFile("patterns/" + weapon_name + ".txt") });
@@ -212,4 +177,44 @@ void MouseMover::RunMover() {
 // loading new pattern according to newly equipped weapon.
 void MouseMover::UpdateCurrPattern() {
 	curr_weapon = &loaded_patterns.at(curr_weapon_name);
+}
+
+// method to setup the buffer before using SendInput.
+void MouseSetup(INPUT *input_buffer) {
+	input_buffer->type = INPUT_MOUSE;
+	input_buffer->mi.dx = 0;
+	input_buffer->mi.dy = 0;
+	input_buffer->mi.mouseData = 0;
+	input_buffer->mi.dwFlags = MOUSEEVENTF_MOVE;
+	input_buffer->mi.time = 0;
+	input_buffer->mi.dwExtraInfo = 0;
+}
+
+// code referenced from Microsoft MSDN:
+// https://msdn.microsoft.com/en-us/library/windows/desktop/ms646310(v=vs.85).aspx
+void MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
+	input_buffer->mi.dx = x_delta;
+	input_buffer->mi.dy = y_delta;
+	input_buffer->mi.dwFlags = MOUSEEVENTF_MOVE;
+	SendInput(1, input_buffer, sizeof(INPUT));
+}
+
+// method that moves the mouse according to the weapon pattern.
+void MoveWithPattern(const PatternObject *loaded_pattern, std::atomic<bool> &is_firing) {
+	INPUT m_input_buf;
+	MouseSetup(&m_input_buf);
+
+	for (auto xy_delta : loaded_pattern->movement_coords) {
+		std::cout << is_firing << std::endl;
+		if (is_firing) {
+			MouseMove(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
+			Sleep(1);
+		}
+		else {
+			return;
+		}
+	}
+	Sleep(kResetDelay);
+	// resetting crosshair back to original position.
+	MouseMove(&m_input_buf, -loaded_pattern->total_x_travel, -loaded_pattern->total_y_travel);
 }
