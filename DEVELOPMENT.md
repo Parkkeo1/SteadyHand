@@ -50,3 +50,9 @@
 - Uploaded demo video for code review checkpoint: https://youtu.be/6U3dU2RN2sM
 - TODOs: Fix Window control issue and switching between states. Thread-ify MoveWithPattern stuff to make the recoil control respond to mid-spray m_left releases (when I release m1 during a spray it should ideally stop controlling).
 - TODOs: Manually record more patterns using MouseMeat and test recoil control with different weapons on the fly.
+
+#### April 28 - 29
+- Successfully tested automatic weapon detection and dynamic pattern control.
+- Threadified MoveWithPattern using std::thread, so recoil control can now stop midway through a spray.
+- Adjusted some minor values in MoveWithPattern. Some properties in the PatternObject are now deprecated, so I need to according delete them.
+- TODOs: Fix Window control issue and switching between states. Refactor code to remove deprecated variables and values.
