@@ -56,3 +56,9 @@
 - Threadified MoveWithPattern using std::thread, so recoil control can now stop midway through a spray.
 - Adjusted some minor values in MoveWithPattern. Some properties in the PatternObject are now deprecated, so I need to according delete them.
 - TODOs: Fix Window control issue and switching between states. Refactor code to remove deprecated variables and values.
+
+#### April 29 (Cont.)
+- Refactored mouse_mover code as subclass of mouse_handler (same for mouse_recorder). Successfully integrated mouse_recorder into oF app.
+- Removed deprecated code, but still more to do; may change patternobject from struct to just a typedef for a vector of tuples.
+- Updated GUI components to reflect current weapons for both recording and using states.
+- TODOs: More refactoring (especially PatternObject). Work on README. Continue to work on window control bug. Start adding more weapons?
