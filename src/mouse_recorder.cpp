@@ -1,8 +1,5 @@
 #include "mouse_recorder.h"
 
-const short kEnterVkey = 13; // ENTER virtual key code
-const short kSaveVKey = 85; // u virtual key code
-
 std::ostream& operator<<(std::ostream &os, const MouseData &m_data) {
 	os << m_data.ms_time << " " << m_data.dx << " " << m_data.dy 
 	   << " " << m_data.mleft_code << std::endl;
@@ -77,13 +74,13 @@ LRESULT MouseRecorder::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 
 			if (raw_input->header.dwType == RIM_TYPEKEYBOARD && raw_input->data.keyboard.Flags == 0) {
 				switch (raw_input->data.keyboard.VKey) {
-					case kEnterVkey: {
+					case VirtualKeys::ENTER: {
 						std::cout << "ENTER key pressed." << std::endl;
 						// TODO: Fix this message loop to exit properly when user presses ENTER.
 						// Currently this exits the entire program... it should only change the state of the program.
 						PostQuitMessage(0);
 						break;
-					} case kSaveVKey: {
+					} case VirtualKeys::SAVE: {
 						WriteBufferToFile();
 						mouse_data_buf.clear();
 						std::cout << "Mouse Data Buffer Cleared." << std::endl;

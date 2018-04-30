@@ -19,6 +19,11 @@
 
 extern const std::string kInactive;
 
+enum VirtualKeys {
+	ENTER = 13,
+	SAVE = 85
+};
+
 class MouseHandler {
 
 protected:

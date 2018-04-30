@@ -1,15 +1,5 @@
 #include "mouse_mover.h"
 
-const LPCWSTR kClassName = TEXT("SteadyHand");
-
-// constants for Windows API raw input device codes.
-const short kDesktopUsage = 1;
-const short kMouseUsage = 2;
-const short kKeyBoardUsage = 6;
-
-// Windows's virtual keyboard key for the ENTER key.
-const short kEnterVkey = 13;
-
 const short kResetDelay = 500;
 const short kManualDelay = 1;
 
@@ -19,42 +9,7 @@ const std::set<std::string> kWeaponNameCodes = {
 	"weapon_m4a1_silencer"
 };
 
-void MouseMover::RegisterMouse() {
-	// code referenced from Microsoft MSDN documentation:
-	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#example_2
-	RAWINPUTDEVICE Rid[2];
-
-	Rid[0].usUsagePage = kDesktopUsage;
-	Rid[0].usUsage = kMouseUsage;
-	Rid[0].dwFlags = RIDEV_NOLEGACY | RIDEV_INPUTSINK;
-	Rid[0].hwndTarget = mouse_mover_wind;
-
-	Rid[1].usUsagePage = kDesktopUsage;
-	Rid[1].usUsage = kKeyBoardUsage;
-	Rid[1].dwFlags = RIDEV_NOLEGACY | RIDEV_INPUTSINK;
-	Rid[1].hwndTarget = mouse_mover_wind;
-
-	if (RegisterRawInputDevices(Rid, 2, sizeof(Rid[0]))) {
-		SetWindowLongPtr(mouse_mover_wind, GWLP_WNDPROC, (LONG_PTR)StaticWinProc);
-		std::cout << "Device registration successful." << std::endl;
-	} else {
-		std::cout << "Device registration failed." << std::endl;
-	}
-}
-
-// code derived from:
-// https://stackoverflow.com/a/28491549
-LRESULT MouseMover::StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
-	MouseMover *p_this = (MouseMover*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-
-	if (!p_this) {
-		return DefWindowProc(hwnd, msg, w_param, l_param);
-	}
-
-	return p_this->MouseMoverProc(msg, w_param, l_param);
-}
-
-LRESULT MouseMover::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
+LRESULT MouseMover::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 	switch (msg) {
 		case WM_INPUT: {
 			UINT dw_size;
@@ -88,7 +43,7 @@ LRESULT MouseMover::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 			}
 
 			if (raw_input->header.dwType == RIM_TYPEKEYBOARD && raw_input->data.keyboard.Flags == 0) {
-				if (raw_input->data.keyboard.VKey == kEnterVkey) {
+				if (raw_input->data.keyboard.VKey == VirtualKeys::ENTER) {
 					std::cout << "ENTER key pressed." << std::endl;
 					// TODO: Fix this message loop to exit properly when user presses ENTER.
 					// Currently this exits the entire program... it should only change the state of the program.
@@ -97,7 +52,7 @@ LRESULT MouseMover::MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 			}
 			break;
 		} default:
-			return DefWindowProc(mouse_mover_wind, msg, w_param, l_param);
+			return DefWindowProc(input_window, msg, w_param, l_param);
 	}
 
 	return 0;
@@ -142,29 +97,6 @@ void MouseMover::LoadAllPatterns() {
 	}
 	catch (const std::exception) {
 		std::cout << "the pattern map was not initialized correctly." << std::endl;
-	}
-}
-
-void MouseMover::SetupMover() {
-	SetWindowLongPtr(mouse_mover_wind, GWLP_USERDATA, (LONG_PTR)this);
-	RegisterMouse();
-	std::cout << "setup complete." << std::endl;
-}
-
-void MouseMover::RunMover() {
-	// TODO: Fix this message loop to exit properly when user presses ENTER.
-	while (true) {
-		MSG message;
-		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
-			if (message.message == WM_QUIT) {
-				break;
-			} else {
-				TranslateMessage(&message);
-				DispatchMessage(&message);
-			}
-		} else {
-			break;
-		}
 	}
 }
 

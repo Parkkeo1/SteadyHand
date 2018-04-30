@@ -72,8 +72,8 @@ void ofApp::UpdateProgramState(ofxDatGuiDropdownEvent state_change) {
 	curr_state = static_cast<ProgramState>(state_change.child);
 
 	if (curr_state == USING) {
-		mouse_mover.SetupMover();
-		mouse_mover.RunMover();
+		mouse_mover.Setup();
+		mouse_mover.Run();
 	}
 
 	if (curr_state == RECORDING) {

@@ -8,9 +8,6 @@ const short kDesktopUsage = 1;
 const short kMouseUsage = 2;
 const short kKeyBoardUsage = 6;
 
-// Windows's virtual keyboard key for the ENTER key.
-const short kEnterVkey = 13;
-
 void MouseHandler::RegisterMouse() {
 	// code referenced from Microsoft MSDN documentation:
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#example_2

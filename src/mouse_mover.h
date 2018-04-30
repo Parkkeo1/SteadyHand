@@ -2,58 +2,29 @@
 #ifndef M_MOVER_H
 #define M_MOVER_H
 
-#include <Windows.h>
-#include <vector>
-#include <iostream>
-#include <chrono>
-#include <fstream>
-#include <sstream>
-#include <iterator>
-#include <string>
-#include <tuple>
-#include <set>
-#include <unordered_map>
-#include <thread>
-#include <functional>
-#include <atomic>
+#include "mouse_handler.h"
+
+extern const std::set<std::string> kWeaponNameCodes;
 
 // struct for loading a spray pattern from a file to be used to move the mouse.
 struct PatternObject {
 	// <unix timestamp (ms), dx, dy>
 	std::vector<std::tuple<int, int, int>> movement_coords;
-
-public:
-	int size() { return movement_coords.size(); }
 };
 
-extern const std::set<std::string> kWeaponNameCodes;
-
-class MouseMover {
-
-	std::string curr_weapon_name;
+class MouseMover : public MouseHandler {
 	PatternObject *curr_weapon;
 	std::unordered_map<std::string, PatternObject> loaded_patterns;
 
-	HWND mouse_mover_wind;
 	std::atomic<bool> is_m_left_down;
-
-	void RegisterMouse();
-	static LRESULT CALLBACK StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
-	LRESULT MouseMoverProc(UINT msg, WPARAM w_param, LPARAM l_param);
-
 	PatternObject LoadPatternFromFile(const std::string &filename);
 
 public:
-	MouseMover() : curr_weapon_name("weapon_ak47"), mouse_mover_wind(NULL), is_m_left_down(false) {};
+	MouseMover() : MouseHandler(), is_m_left_down(false) {}
 
 	void LoadAllPatterns();
-	void SetupMover();
-	void RunMover();
 	void UpdateCurrPattern();
-
-	std::string &get_curr_weap_name() { return curr_weapon_name; }
-	void set_curr_weap_name(const std::string &new_weap_name) { curr_weapon_name = new_weap_name; }
-	void set_hwnd_manually(HWND window_handle) { mouse_mover_wind = window_handle; }
+	LRESULT ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param);
 };
 
 void MouseSetup(INPUT *input_buffer);
