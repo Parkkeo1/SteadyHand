@@ -29,7 +29,7 @@ By simulating mouse movements in place of the user (through the [Windows C++ API
 4. **Recording Patterns Mode**
     - Once this mode is toggled on, SteadyHand will start recording all mouse movements you make **while the mouse left button is pressed down**. All other mouse movements are tracked but never saved to file. 
     - Test this feature by manually compensating a full spray of a gun of your choice (i.e. SteadyHand will record this because the mouse left button is clicked down while firing in-game). Afterwards, release the left mouse button. Then press "u" on the keyboard to save (to file) the mouse path movement that was just recorded.
-    - SteadyHand will detect which gun that was just recorded and appropriately save the movement to the gun's pattern file.
+    - SteadyHand will detect which gun that was just recorded and appropriately save the movement to the gun's pattern file upon the "u" key press.
     
 5. Press ENTER to quit the program.
 
@@ -37,9 +37,12 @@ By simulating mouse movements in place of the user (through the [Windows C++ API
 
 ### Build (for Development) and Dependencies
 
-[Visual Studio (2015 and above)](http://openframeworks.cc/setup/vs/) is needed for VC++ and Windows.h . The solution and project files must be generated using the [openFrameworks project-generator](http://openframeworks.cc/learning/01_basics/create_a_new_project/) application. The [ofxDatGui addon](https://braitsch.github.io/ofxDatGui/index.html#installation) needs to be included using the project-generator; follow the detailed instructions on the ofxDatGui website.
+[Visual Studio (2015 and above)](http://openframeworks.cc/setup/vs/) is needed for VC++ and Windows.h. The solution and project files must be generated using the [openFrameworks project-generator](http://openframeworks.cc/learning/01_basics/create_a_new_project/) application. The [ofxDatGui addon](https://braitsch.github.io/ofxDatGui/index.html#installation) needs to be included using the project-generator; follow the detailed instructions on the ofxDatGui website.
 
-After generating the openFrameworks project/solution, external dependencies need to be included. [Boost](https://www.boost.org/users/history/version_1_67_0.html) needs to be downloaded, compiled, and included into the project; follow instructions in this [SO answer](https://stackoverflow.com/questions/2629421/how-to-use-boost-in-visual-studio-2010/2655683#2655683). Afterwards, [Crow](https://github.com/ipkn/crow) will need to be downloaded and included into the project to set up the HTTP endpoint server to use game-state integration. Download [this](https://github.com/ipkn/crow/tree/master/include) specific directory in Crow's github repository and include the header and folder.
+After generating the openFrameworks project/solution, external dependencies need to be included. 
+- [Boost](https://www.boost.org/users/history/version_1_67_0.html) needs to be downloaded, compiled, and included into the project; follow instructions in this [SO answer](https://stackoverflow.com/questions/2629421/how-to-use-boost-in-visual-studio-2010/2655683#2655683). 
+- Afterwards, [Crow](https://github.com/ipkn/crow) will need to be downloaded and included into the project to set up the HTTP endpoint server to use game-state integration. Download [this](https://github.com/ipkn/crow/tree/master/include) specific directory in Crow's github repository and include the header and folder. 
+- This [JSON library](https://github.com/nlohmann/json) is also required to parse payloads from the CS:GO client.
 
 ***More detailed instructions to come***
 
