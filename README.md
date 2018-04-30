@@ -14,13 +14,13 @@ By simulating mouse movements in place of the user (through the [Windows C++ API
 
 ### Usage (Non-Development)
 
-0. I will upload the complete SteadyHand executable file as a release when I am finished. Alongside the .exe file, you will need to set up your CS:GO client for game-state integration: [detailed instructions on Valve dev website](http://bit.ly/2D32JSu).
+0. I will upload the complete SteadyHand executable file as a release when I am finished. Alongside the .exe file, you will need to set up your CS:GO client for game-state integration: [detailed instructions on Valve dev website](http://bit.ly/2D32JSu). The required cfg file is in this repository as "gamestate_integration_main.cfg".
 
 1. Launch the program executable. A GUI window will display, showing a dropdown menu with options.
     - Select "Aim Assist Mode" to start using SteadyHand's automatic recoil compensation.
     - Select "Record Patterns" to record new weapon spray patterns.
     
-2. The "Currently Equipped" part of the GUI auto-updates to show which weapon the program currently detects from the player in-game. This should correctly correspond to the actively equipped gun in-game if game-state integration was correctly set up.
+2. The "Currently Equipped" part of the GUI auto-updates to show which weapon the program currently detects from the player in-game. This will correctly correspond to the actively equipped gun in-game if game-state integration was correctly set up.
 
 3. **Aim Assist Mode**
     - If SteadyHand was able to locate the patterns/ folder in the same directory of your executable, then it will have loaded all of the spray patterns and correctly compensate recoil for the gun equipped by the player in-game.
