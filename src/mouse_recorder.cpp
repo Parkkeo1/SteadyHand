@@ -78,6 +78,10 @@ LRESULT MouseRecorder::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 						mouse_data_buf.clear();
 						std::cout << "Mouse Data Buffer Cleared." << std::endl;
 						break;
+					} case VirtualKeys::CLEAR: {
+						mouse_data_buf.clear();
+						std::cout << "Mouse Data Buffer Cleared. Not Saved." << std::endl;
+						break;
 					} default: {
 						break;
 					}

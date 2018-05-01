@@ -8,7 +8,7 @@
 
 TEST_CASE("LoadPatternsTest") {
 	PatternObject m4_test_pattern = MouseMover::LoadPatternFromFile("patterns/weapon_m4a1.txt");
-	PatternObject blank_pattern = MouseMover::LoadPatternFromFile("patterns/test.txt");
+	PatternObject blank_pattern = MouseMover::LoadPatternFromFile("patterns/test2.txt");
 
 	REQUIRE(m4_test_pattern.size() == 1572);
 	REQUIRE(blank_pattern.size() == 0);

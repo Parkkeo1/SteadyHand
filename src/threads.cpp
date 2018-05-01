@@ -12,6 +12,7 @@ void ServerThread::threadedFunction() {
 				for (auto &weapon : weap_payload) {
 					if (weapon["state"] == "active") {
 						std::string weapon_name = weapon["name"];
+						std::cout << weapon_name << std::endl;
 						lock();
 						equipped_weapon = weapon_name;
 						unlock();

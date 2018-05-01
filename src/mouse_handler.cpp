@@ -9,6 +9,13 @@ const short kDesktopMode = 1;
 const short kMouseInput = 2;
 const short kKeyBoardInput = 6;
 
+const std::set<std::string> kWeaponNameCodes = {
+	"weapon_ak47",
+	"weapon_m4a1",
+	"weapon_m4a1_silencer",
+	"weapon_famas"
+};
+
 void MouseHandler::RegisterMouse() {
 	// code referenced from Microsoft MSDN documentation:
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#example_2

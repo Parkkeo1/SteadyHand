@@ -4,8 +4,6 @@
 
 #include "mouse_handler.h"
 
-extern const std::set<std::string> kWeaponNameCodes;
-
 // <unix timestamp (ms), dx, dy>
 typedef std::vector<std::tuple<int, int, int>> PatternObject;
 typedef std::unordered_map<std::string, PatternObject> PatternMap;

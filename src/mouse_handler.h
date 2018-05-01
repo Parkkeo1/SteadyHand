@@ -18,10 +18,12 @@
 #include <atomic>
 
 extern const std::string kInactive;
+extern const std::set<std::string> kWeaponNameCodes;
 
 enum VirtualKeys {
-	ENTER = 13,
-	SAVE = 85
+	ENTER = 13, // ENTER
+	SAVE = 85, // u
+	CLEAR = 73 // i
 };
 
 class MouseHandler {

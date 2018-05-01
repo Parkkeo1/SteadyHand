@@ -3,12 +3,6 @@
 const short kResetDelay = 500;
 const short kManualDelay = 1;
 
-const std::set<std::string> kWeaponNameCodes = {
-	"weapon_ak47",
-	"weapon_m4a1",
-	"weapon_m4a1_silencer"
-};
-
 void MouseMover::LoadAllPatterns() {
 	for (auto &weapon_name : kWeaponNameCodes) {
 		loaded_patterns.insert({ weapon_name, LoadPatternFromFile("patterns/" + weapon_name + ".txt") });
