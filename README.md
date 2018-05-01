@@ -2,6 +2,8 @@
 
 An auto-aim/recoil assist program for [Counter-Strike: Global Offensive](https://en.wikipedia.org/wiki/Counter-Strike:_Global_Offensive) (CS:GO) written in C++ using the [Windows API](https://msdn.microsoft.com/en-us/library/windows/desktop/ms632585(v=vs.85).aspx), [openFrameworks](http://openframeworks.cc/), Valve's [Game-State Integration](https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration), and [Crow](https://github.com/ipkn/crow).
 
+**Demo Video Coming Soon.**
+
 By Keon (Isaac) Park, CS @ Illinois.
 
 **Disclaimer:** This program is a proof-of-concept, meaning that it is not meant to be used in live CS:GO games to cheat. If you want to test SteadyHand in-game, run CS:GO with the launch option **-insecure** and play in a offline map/match. I developed this project in order to learn and practice C++, Windows programming, and GUI design.
@@ -12,7 +14,7 @@ In CS:GO, every gun recoils in a [set pattern](http://csgoskills.com/academy/spr
 
 By simulating mouse movements in place of the user (through the [Windows C++ API](https://msdn.microsoft.com/en-us/library/windows/desktop/ms632585(v=vs.85).aspx)), SteadyHand automatically controls in-game weapon recoil and maintains accurate aim without human error whenever the player fires a gun. SteadyHand also automatically detects real-time which weapon the user has equipped and loads the corresponding pattern to control the recoil. It accomplishes this using [Valve's Game-State Integration](https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration), which sends live information about in-game events in JSON format to a HTTP endpoint.
 
-*Since CS:GO is only mainly available on Windows and SteadyHand uses the Windows API, SteadyHand can only be used on the Windows operating system, preferably 7/10.*
+**Since CS:GO is only mainly available on Windows and SteadyHand uses the Windows API, SteadyHand can only be used on the Windows operating system, preferably 7/10.**
 
 ### Usage (Non-Development)
 
