@@ -7,10 +7,14 @@
 // testing pattern functions in mouse_mover
 
 TEST_CASE("LoadPatternsTest") {
+	// NOTE: I did not want to duplicate add the patterns/ files in git, so
+	// in order for this test file to find the patterns on your computer,
+	// the patterns/ directory from the bin/ directory needs to be copied
+	// into the directory of this test's executable.
 	PatternObject m4_test_pattern = MouseMover::LoadPatternFromFile("patterns/weapon_m4a1.txt");
 	PatternObject blank_pattern = MouseMover::LoadPatternFromFile("patterns/test2.txt");
 
-	REQUIRE(m4_test_pattern.size() == 1572);
+	REQUIRE(m4_test_pattern.size() == 1572);													 
 	REQUIRE(blank_pattern.size() == 0);
 
 	SECTION("LoadAllPatternsTest") {
