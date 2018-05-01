@@ -41,7 +41,7 @@ By simulating mouse movements in place of the user (through the [Windows C++ API
 
 ### Build (for Development) and Dependencies
 
-[Visual Studio (2015 and above)](http://openframeworks.cc/setup/vs/) is recommended/needed for VC++ and the Windows.h file. The solution and project files must be generated using the [openFrameworks project-generator](http://openframeworks.cc/learning/01_basics/create_a_new_project/) application, and while doing so, the [ofxDatGui addon](https://braitsch.github.io/ofxDatGui/index.html#installation) needs to be included; follow the detailed instructions on the ofxDatGui and openFrameworks website.
+[Visual Studio (2015 and above)](http://openframeworks.cc/setup/vs/) is recommended/needed for VC++ and the Windows.h file. [openFrameworks](http://openframeworks.cc/) is required. The solution and project files must be generated using the [openFrameworks project-generator](http://openframeworks.cc/learning/01_basics/create_a_new_project/) application, and while doing so, the [ofxDatGui addon](https://braitsch.github.io/ofxDatGui/index.html#installation) needs to be included; follow the detailed instructions on the ofxDatGui and openFrameworks website.
 
 After generating the openFrameworks project/solution, external dependencies need to be included. 
 - [Boost](https://www.boost.org/users/history/version_1_67_0.html) needs to be downloaded, compiled, and included into the project; follow instructions in this [SO answer](https://stackoverflow.com/questions/2629421/how-to-use-boost-in-visual-studio-2010/2655683#2655683). 
