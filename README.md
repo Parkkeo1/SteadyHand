@@ -2,7 +2,7 @@
 
 An auto-aim/recoil assist program for [Counter-Strike: Global Offensive](https://en.wikipedia.org/wiki/Counter-Strike:_Global_Offensive) (CS:GO) written in C++ using the [Windows API](https://msdn.microsoft.com/en-us/library/windows/desktop/ms632585(v=vs.85).aspx), [openFrameworks](http://openframeworks.cc/), Valve's [Game-State Integration](https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration), and [Crow](https://github.com/ipkn/crow).
 
-**Demo Video Coming Soon.**
+**[Demo Video](https://youtu.be/eF7Y9nflMeQ)**
 
 By Keon (Isaac) Park, CS @ Illinois.
 
