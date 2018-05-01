@@ -21,7 +21,7 @@ void MouseRecorder::AddNewMouseData(const RAWMOUSE &m_data) {
 
 void MouseRecorder::WriteBufferToFile() {
 	if (curr_weapon_name != kInactive) {
-		std::string filename = "patterns/" + curr_weapon_name + ".txt"; // for testing.
+		std::string filename = "patterns/" + curr_weapon_name + ".txt";
 		std::ofstream pattern_file(filename);
 		int save_counter = 0;
 
@@ -54,19 +54,12 @@ void MouseRecorder::WriteBufferToFile() {
 LRESULT MouseRecorder::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 	switch (msg) {
 		case WM_INPUT: {
-			UINT dw_size;
-			GetRawInputData((HRAWINPUT)l_param, RID_INPUT, NULL, &dw_size, sizeof(RAWINPUTHEADER));
-			LPBYTE lpb = new BYTE[dw_size];
-			if (lpb == NULL) {
-				return -1;
-			}
-
-			if (GetRawInputData((HRAWINPUT)l_param, RID_INPUT, lpb, &dw_size, sizeof(RAWINPUTHEADER)) != dw_size) {
-				std::cout << "GetRawInputData does not return correct size !" << std::endl;
+			LPBYTE processed_msg = CheckMessageSize(l_param);
+			if (processed_msg == LPBYTE()) {
 				return -1;
 			}
 			// size of message/data has been confirmed to be correct.
-			RAWINPUT* raw_input = (RAWINPUT*)lpb;
+			RAWINPUT* raw_input = (RAWINPUT*)processed_msg;
 
 			if (raw_input->header.dwType == RIM_TYPEMOUSE) {
 				AddNewMouseData(raw_input->data.mouse);
@@ -77,7 +70,7 @@ LRESULT MouseRecorder::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 					case VirtualKeys::ENTER: {
 						std::cout << "ENTER key pressed." << std::endl;
 						// TODO: Fix this message loop to exit properly when user presses ENTER.
-						// Currently this exits the entire program... it should only change the state of the program.
+						// Currently this exits the entire program.
 						PostQuitMessage(0);
 						break;
 					} case VirtualKeys::SAVE: {

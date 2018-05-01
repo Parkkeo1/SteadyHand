@@ -32,6 +32,7 @@ protected:
 
 	void RegisterMouse();
 
+	static LPBYTE CheckMessageSize(LPARAM &l_param);
 	static LRESULT CALLBACK StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
 	virtual LRESULT ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) = 0;
 

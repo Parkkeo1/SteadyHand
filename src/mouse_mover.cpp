@@ -9,22 +9,33 @@ const std::set<std::string> kWeaponNameCodes = {
 	"weapon_m4a1_silencer"
 };
 
+void MouseMover::LoadAllPatterns() {
+	for (auto &weapon_name : kWeaponNameCodes) {
+		loaded_patterns.insert({ weapon_name, LoadPatternFromFile("patterns/" + weapon_name + ".txt") });
+	}
+	// setting defaults.
+	curr_weapon_name = *kWeaponNameCodes.begin();
+	try {
+		curr_weapon = &loaded_patterns.at(curr_weapon_name);
+	} catch (const std::exception) {
+		std::cout << "the pattern map was not initialized correctly." << std::endl;
+	}
+}
+
+// loading new pattern according to newly equipped weapon.
+void MouseMover::UpdateCurrPattern() {
+	curr_weapon = &loaded_patterns.at(curr_weapon_name);
+}
+
 LRESULT MouseMover::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 	switch (msg) {
 		case WM_INPUT: {
-			UINT dw_size;
-			GetRawInputData((HRAWINPUT)l_param, RID_INPUT, NULL, &dw_size, sizeof(RAWINPUTHEADER));
-			LPBYTE lpb = new BYTE[dw_size];
-			if (lpb == NULL) {
-				return -1;
-			}
-
-			if (GetRawInputData((HRAWINPUT)l_param, RID_INPUT, lpb, &dw_size, sizeof(RAWINPUTHEADER)) != dw_size) {
-				std::cout << "GetRawInputData does not return correct size !" << std::endl;
+			LPBYTE processed_msg = CheckMessageSize(l_param);
+			if (processed_msg == LPBYTE()) {
 				return -1;
 			}
 			// size of message/data has been confirmed to be correct.
-			RAWINPUT* raw_input = (RAWINPUT*)lpb;
+			RAWINPUT* raw_input = (RAWINPUT*)processed_msg;
 
 			if (raw_input->header.dwType == RIM_TYPEMOUSE) {
 				switch (raw_input->data.mouse.usButtonFlags) {
@@ -46,7 +57,7 @@ LRESULT MouseMover::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 				if (raw_input->data.keyboard.VKey == VirtualKeys::ENTER) {
 					std::cout << "ENTER key pressed." << std::endl;
 					// TODO: Fix this message loop to exit properly when user presses ENTER.
-					// Currently this exits the entire program... it should only change the state of the program.
+					// Currently this exits the entire program.
 					PostQuitMessage(0);
 				}
 			}
@@ -77,7 +88,7 @@ PatternObject MouseMover::LoadPatternFromFile(const std::string &filename) {
 				is_first_line = false;
 			}
 
-			spray_pattern.movement_coords.push_back({ std::stoll(xy_info[0]) - prev_time, std::stoi(xy_info[1]), std::stoi(xy_info[2]) });
+			spray_pattern.push_back({ std::stoll(xy_info[0]) - prev_time, std::stoi(xy_info[1]), std::stoi(xy_info[2]) });
 			prev_time = std::stoll(xy_info[0]);
 		}
 	} else {
@@ -86,27 +97,8 @@ PatternObject MouseMover::LoadPatternFromFile(const std::string &filename) {
 	return spray_pattern;
 }
 
-void MouseMover::LoadAllPatterns() {
-	for (auto &weapon_name : kWeaponNameCodes) {
-		loaded_patterns.insert({ weapon_name, LoadPatternFromFile("patterns/" + weapon_name + ".txt") });
-	}
-	// setting defaults.
-	curr_weapon_name = *kWeaponNameCodes.begin();
-	try {
-		curr_weapon = &loaded_patterns.at(curr_weapon_name);
-	}
-	catch (const std::exception) {
-		std::cout << "the pattern map was not initialized correctly." << std::endl;
-	}
-}
-
-// loading new pattern according to newly equipped weapon.
-void MouseMover::UpdateCurrPattern() {
-	curr_weapon = &loaded_patterns.at(curr_weapon_name);
-}
-
 // method to setup the buffer before using SendInput.
-void MouseSetup(INPUT *input_buffer) {
+void MouseMover::MouseSetup(INPUT *input_buffer) {
 	input_buffer->type = INPUT_MOUSE;
 	input_buffer->mi.dx = 0;
 	input_buffer->mi.dy = 0;
@@ -118,7 +110,7 @@ void MouseSetup(INPUT *input_buffer) {
 
 // code referenced from Microsoft MSDN:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms646310(v=vs.85).aspx
-void MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
+void MouseMover::MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
 	input_buffer->mi.dx = x_delta;
 	input_buffer->mi.dy = y_delta;
 	input_buffer->mi.dwFlags = MOUSEEVENTF_MOVE;
@@ -126,14 +118,14 @@ void MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
 }
 
 // method that moves the mouse according to the weapon pattern.
-void MoveWithPattern(const PatternObject *loaded_pattern, std::atomic<bool> &is_firing) {
+void MouseMover::MoveWithPattern(const PatternObject *loaded_pattern, std::atomic<bool> &is_firing) {
 	INPUT m_input_buf;
 	MouseSetup(&m_input_buf);
 
 	int x_total_dist = 0;
 	int y_total_dist = 0;
 
-	for (auto xy_delta : loaded_pattern->movement_coords) {
+	for (auto xy_delta : *loaded_pattern) {
 		if (is_firing) {
 			MouseMove(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
 			x_total_dist += std::get<1>(xy_delta);

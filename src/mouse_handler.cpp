@@ -1,39 +1,56 @@
 #include "mouse_handler.h"
 
-const LPCWSTR kClassName = TEXT("SteadyHand");
+// string constants used for setting up program.
+const LPCWSTR kClassName = (LPCWSTR)"SteadyHand";
 const std::string kInactive = "Inactive";
 
 // constants for Windows API raw input device codes.
-const short kDesktopUsage = 1;
-const short kMouseUsage = 2;
-const short kKeyBoardUsage = 6;
+const short kDesktopMode = 1;
+const short kMouseInput = 2;
+const short kKeyBoardInput = 6;
 
 void MouseHandler::RegisterMouse() {
 	// code referenced from Microsoft MSDN documentation:
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#example_2
 	RAWINPUTDEVICE Rid[2];
 
-	Rid[0].usUsagePage = kDesktopUsage;
-	Rid[0].usUsage = kMouseUsage;
+	Rid[0].usUsagePage = kDesktopMode;
+	Rid[0].usUsage = kMouseInput;
 	Rid[0].dwFlags = RIDEV_NOLEGACY | RIDEV_INPUTSINK;
 	Rid[0].hwndTarget = input_window;
 
-	Rid[1].usUsagePage = kDesktopUsage;
-	Rid[1].usUsage = kKeyBoardUsage;
+	Rid[1].usUsagePage = kDesktopMode;
+	Rid[1].usUsage = kKeyBoardInput;
 	Rid[1].dwFlags = RIDEV_NOLEGACY | RIDEV_INPUTSINK;
 	Rid[1].hwndTarget = input_window;
 
 	if (RegisterRawInputDevices(Rid, 2, sizeof(Rid[0]))) {
 		SetWindowLongPtr(input_window, GWLP_WNDPROC, (LONG_PTR)StaticWinProc);
 		std::cout << "Device registration successful." << std::endl;
-	}
-	else {
+	} else {
 		std::cout << "Device registration failed." << std::endl;
 	}
 }
 
-// code derived from:
-// https://stackoverflow.com/a/28491549
+LPBYTE MouseHandler::CheckMessageSize(LPARAM &l_param) {
+	// code referenced from Microsoft MSDN documentation:
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#standard_read
+	UINT dw_size;
+	GetRawInputData((HRAWINPUT)l_param, RID_INPUT, NULL, &dw_size, sizeof(RAWINPUTHEADER));
+	LPBYTE lpb = new BYTE[dw_size];
+	if (lpb == NULL) {
+		return LPBYTE();
+	}
+
+	if (GetRawInputData((HRAWINPUT)l_param, RID_INPUT, lpb, &dw_size, sizeof(RAWINPUTHEADER)) != dw_size) {
+		std::cout << "GetRawInputData does not return correct size !" << std::endl;
+		return LPBYTE();
+	}
+	return lpb;
+}
+
+// code referenced from Microsoft MSDN documentation:
+// https://msdn.microsoft.com/en-us/library/windows/desktop/ff381400(v=vs.85).aspx
 LRESULT MouseHandler::StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
 	MouseHandler *p_this = (MouseHandler*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
@@ -51,7 +68,8 @@ void MouseHandler::Setup() {
 }
 
 void MouseHandler::Run() {
-	// TODO: Fix this message loop to exit properly when user presses ENTER.
+	// code referenced from Microsoft MSDN documentation:
+	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms644928(v=vs.85).aspx#creating_loop
 	while (true) {
 		MSG message;
 		if (PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {

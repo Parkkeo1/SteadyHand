@@ -23,10 +23,10 @@ class MouseRecorder : public MouseHandler {
 	std::vector<MouseData> mouse_data_buf;
 
 	void AddNewMouseData(const RAWMOUSE &m_data);
-	void WriteBufferToFile();
 	LRESULT ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param);
 
 public:
+	void WriteBufferToFile();
 	std::vector<MouseData> &get_mouse_data_buf() { return mouse_data_buf; }
 };
 
