@@ -62,3 +62,10 @@
 - Removed deprecated code, but still more to do; may change patternobject from struct to just a typedef for a vector of tuples.
 - Updated GUI components to reflect current weapons for both recording and using states.
 - TODOs: More refactoring (especially PatternObject). Work on README. Continue to work on window control bug. Start adding more weapons?
+
+#### April 30
+- Finished refactoring code to remove deprecated variables and reduce repetition. 
+- Successfully re-tested all functionalities of SteadyHand, especially by adding a new weapon to record/use: the Famas.
+- Added some basic testing (all that I can do for this particular project) for mouse data and patterns methods.
+- Added new comments/documentation for SteadyHand code.
+- TODO: Record demo video for final presentation.
