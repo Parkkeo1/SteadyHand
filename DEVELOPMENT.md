@@ -69,3 +69,7 @@
 - Added some basic testing (all that I can do for this particular project) for mouse data and patterns methods.
 - Added new comments/documentation for SteadyHand code.
 - TODO: Record demo video for final presentation.
+
+#### May 1 - 2
+- Completed presentation using recorded demo video, link available on README.md.
+- Project complete, I'll probably continue to improve SteadyHand during the summer.
