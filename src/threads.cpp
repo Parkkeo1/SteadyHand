@@ -1,20 +1,21 @@
 #include "threads.h"
 
 void ServerThread::threadedFunction() {
-	crow::SimpleApp steady_hand_server;
+	crow::SimpleApp weapon_detect_server;
 
-	CROW_ROUTE(steady_hand_server, "/GS").methods("POST"_method)
-		([this](const crow::request &post_request) {
+	CROW_ROUTE(weapon_detect_server, "/GS").methods("POST"_method)
+		([this](const crow::request &game_state_data) {
 
 		try {
-			json weap_payload = json::parse(post_request.body)["player"]["weapons"];
-			if (!weap_payload.is_null()) {
-				for (auto &weapon : weap_payload) {
+			json weapon_data = json::parse(game_state_data.body)["player"]["weapons"];
+			if (!weapon_data.is_null()) {
+				for (auto &weapon : weapon_data) {
+					// within JSON payload, determine which weapon user is actively holding
 					if (weapon["state"] == "active") {
-						std::string weapon_name = weapon["name"];
-						std::cout << weapon_name << std::endl;
+						// mutex locking functionality from ofThread to ensure updates to this variable are thread-safe,
+						// as this variable is read by other parts of program
 						lock();
-						equipped_weapon = weapon_name;
+						equipped_weapon = weapon["name"];
 						unlock();
 						break;
 					}
@@ -26,5 +27,5 @@ void ServerThread::threadedFunction() {
 		return crow::response(200);
 	});
 
-	steady_hand_server.port(8080).run();
+	weapon_detect_server.port(8080).run();
 }

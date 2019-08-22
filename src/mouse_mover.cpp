@@ -1,14 +1,13 @@
 #include "mouse_mover.h"
 
-const short kResetDelay = 500;
-const short kManualDelay = 1;
-
-void MouseMover::LoadAllPatterns() {
-	for (auto &weapon_name : kWeaponNameCodes) {
-		loaded_patterns.insert({ weapon_name, LoadPatternFromFile("patterns/" + weapon_name + ".txt") });
+void MouseMover::load_all_patterns() {
+	// for all weapons, load in their saved "patterns"
+	for (auto &weapon_name : weapon_names) {
+		loaded_patterns.insert({ weapon_name, load_pattern_from_file("patterns/" + weapon_name + ".txt") });
 	}
+
 	// setting defaults.
-	curr_weapon_name = *kWeaponNameCodes.begin();
+	curr_weapon_name = *weapon_names.begin();
 	try {
 		curr_weapon = &loaded_patterns.at(curr_weapon_name);
 	} catch (const std::exception) {
@@ -16,16 +15,16 @@ void MouseMover::LoadAllPatterns() {
 	}
 }
 
-// loading new pattern according to newly equipped weapon.
-void MouseMover::UpdateCurrPattern() {
+// loads new pattern according to newly equipped weapon (after curr_weapon_name has recently been updated)
+void MouseMover::update_current_pattern() {
 	curr_weapon = &loaded_patterns.at(curr_weapon_name);
 }
 
 LRESULT MouseMover::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 	switch (msg) {
 		case WM_INPUT: {
-			LPBYTE processed_msg = CheckMessageSize(l_param);
-			if (processed_msg == LPBYTE()) {
+			LPBYTE processed_msg = check_message_size(l_param);
+			if (processed_msg == NULL) {
 				return -1;
 			}
 			// size of message/data has been confirmed to be correct.
@@ -35,7 +34,7 @@ LRESULT MouseMover::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 				switch (raw_input->data.mouse.usButtonFlags) {
 					case 1: {
 						is_m_left_down = true;
-						std::thread pattern_thread = std::thread(MoveWithPattern, curr_weapon, std::ref(is_m_left_down));
+						std::thread pattern_thread = std::thread(move_with_pattern, curr_weapon, std::ref(is_m_left_down));
 						pattern_thread.detach();
 						break;
 					} case 2: {
@@ -49,9 +48,8 @@ LRESULT MouseMover::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 
 			if (raw_input->header.dwType == RIM_TYPEKEYBOARD && raw_input->data.keyboard.Flags == 0) {
 				if (raw_input->data.keyboard.VKey == VirtualKeys::ENTER) {
-					std::cout << "ENTER key pressed." << std::endl;
-					// TODO: Fix this message loop to exit properly when user presses ENTER.
-					// Currently this exits the entire program.
+					std::cout << "Exiting." << std::endl;
+					// Exits program.
 					PostQuitMessage(0);
 				}
 			}
@@ -63,8 +61,8 @@ LRESULT MouseMover::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 	return 0;
 }
 
-// method that parses a given file to load a spray pattern.
-PatternObject MouseMover::LoadPatternFromFile(const std::string &filename) {
+// method that parses a given file to create a PatternObject
+PatternObject MouseMover::load_pattern_from_file(const std::string &filename) {
 	PatternObject spray_pattern;
 	std::ifstream pattern_file(filename);
 	std::string file_line;
@@ -73,6 +71,7 @@ PatternObject MouseMover::LoadPatternFromFile(const std::string &filename) {
 		long long prev_time = 0;
 		bool is_first_line = true;
 
+		// read line-by-line the saved data file and add to the PatternObject.
 		while (getline(pattern_file, file_line)) {
 			std::istringstream in_sstream(file_line);
 			std::vector<std::string> xy_info(std::istream_iterator<std::string>{in_sstream},
@@ -82,17 +81,20 @@ PatternObject MouseMover::LoadPatternFromFile(const std::string &filename) {
 				is_first_line = false;
 			}
 
-			spray_pattern.push_back({ std::stoll(xy_info[0]) - prev_time, std::stoi(xy_info[1]), std::stoi(xy_info[2]) });
-			prev_time = std::stoll(xy_info[0]);
+			int delay_time = std::stoll(xy_info[0]);
+
+			spray_pattern.push_back({ delay_time - prev_time, std::stoi(xy_info[1]), std::stoi(xy_info[2]) });
+			prev_time = delay_time;
 		}
 	} else {
 		std::cout << "file not found" << std::endl;
 	}
+
 	return spray_pattern;
 }
 
 // method to setup the buffer before using SendInput.
-void MouseMover::MouseSetup(INPUT *input_buffer) {
+void MouseMover::mouse_setup(INPUT *input_buffer) {
 	input_buffer->type = INPUT_MOUSE;
 	input_buffer->mi.dx = 0;
 	input_buffer->mi.dy = 0;
@@ -104,32 +106,41 @@ void MouseMover::MouseSetup(INPUT *input_buffer) {
 
 // code referenced from Microsoft MSDN:
 // https://msdn.microsoft.com/en-us/library/windows/desktop/ms646310(v=vs.85).aspx
-void MouseMover::MouseMove(INPUT *input_buffer, int x_delta, int y_delta) {
+void MouseMover::mouse_move(INPUT *input_buffer, int x_delta, int y_delta) {
 	input_buffer->mi.dx = x_delta;
 	input_buffer->mi.dy = y_delta;
 	input_buffer->mi.dwFlags = MOUSEEVENTF_MOVE;
-	SendInput(1, input_buffer, sizeof(INPUT));
+	SendInput(1, input_buffer, sizeof(INPUT)); // Win32 API function to move mouse
 }
 
-// method that moves the mouse according to the weapon pattern.
-void MouseMover::MoveWithPattern(const PatternObject *loaded_pattern, std::atomic<bool> &is_firing) {
+// method that moves the mouse according to the weapon pattern, automatically controlling the recoil of the weapon in-game in real-time.
+void MouseMover::move_with_pattern(const PatternObject *loaded_pattern, std::atomic<bool> &is_firing) {
 	INPUT m_input_buf;
-	MouseSetup(&m_input_buf);
+	mouse_setup(&m_input_buf);
 
 	int x_total_dist = 0;
 	int y_total_dist = 0;
 
 	for (auto xy_delta : *loaded_pattern) {
+		// while firing (and this condition is checked every iteration so that SteadyHand stops moving the mouse once user stops firing the weapon),
+		// execute the current weapon's saved pattern in order and control its recoil in-game.
 		if (is_firing) {
-			MouseMove(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
+			mouse_move(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
 			x_total_dist += std::get<1>(xy_delta);
 			y_total_dist += std::get<2>(xy_delta);
-			Sleep(kManualDelay);
+
+			// To mimic the real-life delay between different mouse coordinates when a human is moving a mouse, 
+			// implement a delay between each mouse movement to make sure the pattern is not executed too quickly;
+			// the aimbot must correctly match the recoil of the weapon being fired in-game in real-time.
+
+			// Disclaimer: Due to hidden/implicit delays between each iteration of the loop, 
+			// it is possible for this loop to "fall behind" the firing rate of the weapon in-game.
+			Sleep(std::get<0>(xy_delta));
 		} else {
 			break;
 		}
 	}
-	Sleep(kResetDelay);
+	Sleep(xHairResetDelay);
 	// resetting crosshair back to original position.
-	MouseMove(&m_input_buf, -x_total_dist, -y_total_dist);
+	mouse_move(&m_input_buf, -x_total_dist, -y_total_dist);
 }

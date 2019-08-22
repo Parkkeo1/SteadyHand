@@ -1,33 +1,27 @@
-#include "mouse_handler.h"
+#include "mouse_handler.h" // <- detailed comments in header
 
-// string constants used for setting up program.
-const LPCWSTR kClassName = (LPCWSTR)"SteadyHand";
-const std::string kInactive = "Inactive";
-
-// constants for Windows API raw input device codes.
-const short kDesktopMode = 1;
-const short kMouseInput = 2;
-const short kKeyBoardInput = 6;
-
-const std::set<std::string> kWeaponNameCodes = {
+// initializing static members
+const std::string MouseHandler::inactive_weapon = "inactive";
+const std::set<std::string> MouseHandler::weapon_names = {
 	"weapon_ak47",
 	"weapon_m4a1",
 	"weapon_m4a1_silencer",
 	"weapon_famas"
 };
+const LPCWSTR MouseHandler::class_name = (LPCWSTR)"SteadyHand";
 
-void MouseHandler::RegisterMouse() {
+void MouseHandler::register_mouse() {
 	// code referenced from Microsoft MSDN documentation:
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#example_2
 	RAWINPUTDEVICE Rid[2];
 
-	Rid[0].usUsagePage = kDesktopMode;
-	Rid[0].usUsage = kMouseInput;
+	Rid[0].usUsagePage = desktop_mode_code;
+	Rid[0].usUsage = mouse_input_code;
 	Rid[0].dwFlags = RIDEV_NOLEGACY | RIDEV_INPUTSINK;
 	Rid[0].hwndTarget = input_window;
 
-	Rid[1].usUsagePage = kDesktopMode;
-	Rid[1].usUsage = kKeyBoardInput;
+	Rid[1].usUsagePage = desktop_mode_code;
+	Rid[1].usUsage = keyboard_input_code;
 	Rid[1].dwFlags = RIDEV_NOLEGACY | RIDEV_INPUTSINK;
 	Rid[1].hwndTarget = input_window;
 
@@ -39,42 +33,49 @@ void MouseHandler::RegisterMouse() {
 	}
 }
 
-LPBYTE MouseHandler::CheckMessageSize(LPARAM &l_param) {
+LPBYTE MouseHandler::check_message_size(LPARAM &l_param) {
 	// code referenced from Microsoft MSDN documentation:
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms645546(v=vs.85).aspx#standard_read
 	UINT dw_size;
 	GetRawInputData((HRAWINPUT)l_param, RID_INPUT, NULL, &dw_size, sizeof(RAWINPUTHEADER));
 	LPBYTE lpb = new BYTE[dw_size];
 	if (lpb == NULL) {
-		return LPBYTE();
+		return NULL;
 	}
 
 	if (GetRawInputData((HRAWINPUT)l_param, RID_INPUT, lpb, &dw_size, sizeof(RAWINPUTHEADER)) != dw_size) {
-		std::cout << "GetRawInputData does not return correct size !" << std::endl;
-		return LPBYTE();
+		std::cout << "GetRawInputData does not return correct size" << std::endl;
+		return NULL;
 	}
 	return lpb;
 }
 
 // code referenced from Microsoft MSDN documentation:
-// https://msdn.microsoft.com/en-us/library/windows/desktop/ff381400(v=vs.85).aspx
+// https://docs.microsoft.com/en-us/windows/win32/learnwin32/managing-application-state-#an-object-oriented-approach
 LRESULT MouseHandler::StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
+	// this function allows for an object-oriented approach to implementing the WinProc callback function(s).
+	// in this case, it is useful because I want two callback functions (one for recording, one for playback)
+	// that each do different things with the user input data.
 	MouseHandler *p_this = (MouseHandler*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	if (!p_this) {
 		return DefWindowProc(hwnd, msg, w_param, l_param);
 	}
 
+	// calls the corresponding WndProc function for the current "mode"
 	return p_this->ClassWinProc(msg, w_param, l_param);
 }
 
-void MouseHandler::Setup() {
+void MouseHandler::setup() {
+	// from my (basic) understanding, SetWindowLongPtr() allows for the storing of an object pointer within an application window
+	// because instance data can be stored in each window. This comes in handy in the WinProc function above.
 	SetWindowLongPtr(input_window, GWLP_USERDATA, (LONG_PTR)this);
-	RegisterMouse();
-	std::cout << "setup complete." << std::endl;
+	register_mouse();
+	std::cout << "setup complete" << std::endl;
 }
 
-void MouseHandler::Run() {
+// starts basic message loop to receive messages about registered input devices from Windows
+void MouseHandler::run() {
 	// code referenced from Microsoft MSDN documentation:
 	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms644928(v=vs.85).aspx#creating_loop
 	while (true) {
@@ -84,6 +85,7 @@ void MouseHandler::Run() {
 				break;
 			} else {
 				TranslateMessage(&message);
+				// invokes WndProc callback function to process the message
 				DispatchMessage(&message);
 			}
 		} else {

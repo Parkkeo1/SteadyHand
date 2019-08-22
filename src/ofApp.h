@@ -10,45 +10,46 @@
 enum ProgramState {
 	USING = 0,
 	RECORDING = 1,
-	INACTIVE
+	INACTIVE = 2
 };
 
-// vector whose strings each correspond to ProgramStates's names
-// used to display in GUI
-extern const std::vector<std::string> program_states;
-
-// openFrameworks base application class
+// openFrameworks application class
 class ofApp : public ofBaseApp {
 
 private:
-	// ofxDatGui main gui panel
-	ofxDatGui *steadyhand_gui;
+	// main gui panel
+	ofxDatGui * steady_hand_gui;
 
-	// gui components that are live-updated to show the 
-	// current equipped weapon of the user
+	// real-time updated gui components for current user weapon
 	ofxDatGuiLabel *gui_curr_weapon;
 	ofxDatGuiLabel *gui_recording_weapon;
 	
-	// ofThread object that takes care of receiving game-state integration 
-	// JSON payloads from the CS:GO client
-	ServerThread json_server_th;
+	// dedicated ofThread to receive real-time player data from game client
+	ServerThread bg_server_thread;
 
-	// objects that handle the specific functionalities of SteadyHand
+	// handles the specific functionalities of SteadyHand
 	MouseMover mouse_mover;
 	MouseRecorder mouse_recorder;
 
 	ProgramState curr_state;
 
+	// GUI related settings/constants
+	const static std::string gui_title;
+	const static std::string curr_weapon_prefix;;
+	const static int bg_color = 71462;
+
+	// each mode's index corresponds to a ProgramState enum value
+	// vector is necessary due to how ofxDatGui handles drop down menus
+	const static std::vector<std::string> modes;
+
 public:
-	// setup function specifically to setup the ofxDatGui GUI
+	// setup function to setup ofxDatGui GUI
 	void setup_gui();
 
-	// handles setting up the background local HTTP server, 
-	// the MouseMover/Recorder objects, and the GUI window
+	// handles initializing background thread, MouseMover/Recorder, and GUI window
 	void setup();
 
-	// handles real-time updates of which weapon the user has currently equipped;
-	// constantly updates GUI to display this current weapon
+	// handles real-time GUI updates of which weapon the user has currently equipped;
 	void update();
 	void draw();
 

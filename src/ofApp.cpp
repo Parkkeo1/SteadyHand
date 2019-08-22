@@ -1,39 +1,39 @@
 #include "ofApp.h"
 
-const std::string kGuiTitle = ">> SteadyHand <<";
-const std::string kCurrWeaponPre = "Currently Equipped: ";
+// initialize static members
+const std::string ofApp::gui_title = "SteadyHand: An auto aim-assist cheat";
+const std::string ofApp::curr_weapon_prefix = "Currently Equipped: ";
 
-const std::vector<std::string> program_states = {
-	"Aim Assist Mode",
-	"Record Patterns Mode"
-};
+const std::vector<std::string> ofApp::modes = { "Active", "Recording", "Inactive" };
 
-// same as 0x011726.
-const int kBackGroundColor = 71462;
-
-void ofApp::setup_gui() { // NOTE: Adjust high res mode threshold in ofxDatGuiTheme.h to the window size used in main.cpp
-	ofxDatGui* steadyhand_gui = new ofxDatGui(0, 0);
-	steadyhand_gui->setTheme(new SteadyHandTheme());
+// NOTE: For first time use of ofxDatGui, adjust high res mode threshold in ofxDatGuiTheme.h to the window size used in main.cpp
+void ofApp::setup_gui() {
+	steady_hand_gui = new ofxDatGui(0, 0);
+	steady_hand_gui->setTheme(new SteadyHandTheme());
 	
-	// title heading in gui
-	ofxDatGuiLabel *gui_title = steadyhand_gui->addLabel(kGuiTitle);
-	gui_title->setLabelAlignment(ofxDatGuiAlignment::CENTER);
+	// title
+	ofxDatGuiLabel * gui_title_label = steady_hand_gui->addLabel(gui_title);
+	gui_title_label->setLabelAlignment(ofxDatGuiAlignment::CENTER);
 	
 	// menu to switch between states
-	ofxDatGuiDropdown *state_menu = steadyhand_gui->addDropdown("Select Program State", program_states);
+	ofxDatGuiDropdown * state_menu = steady_hand_gui->addDropdown("Select Program State", modes);
 	state_menu->onDropdownEvent(this, &ofApp::UpdateProgramState);
 
 	// label that displays current weapon
-	gui_curr_weapon = steadyhand_gui->addLabel(kCurrWeaponPre);
+	gui_curr_weapon = steady_hand_gui->addLabel(curr_weapon_prefix);
 }
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	ofSetBackgroundColorHex(kBackGroundColor);
+	ofSetBackgroundColorHex(bg_color);
 	curr_state = INACTIVE;
 
-	json_server_th.startThread(true);
-	mouse_mover.LoadAllPatterns();
+	bg_server_thread.startThread(true);
+
+	// preemptively load in all weapon patterns into memory for fast/efficient access and swapping b/t weapons
+	mouse_mover.load_all_patterns();
+
+	// get handle of application window and set it to use for receiving messages from Windows
 	mouse_mover.set_hwnd_manually(ofGetWin32Window());
 	mouse_recorder.set_hwnd_manually(ofGetWin32Window());
 
@@ -42,24 +42,26 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-	json_server_th.lock();
-	std::string &new_equipped = json_server_th.get_equipped_weapon();
-	json_server_th.unlock();
+	// when reading an update to the currently equipped weapon, ensure thread safety
+	bg_server_thread.lock();
+	std::string &new_weapon = bg_server_thread.get_equipped_weapon();
+	bg_server_thread.unlock();
 
-	if (kWeaponNameCodes.count(new_equipped) != 0) {
-		if (curr_state == USING && new_equipped != mouse_mover.get_curr_weap_name()) {
-			mouse_mover.set_curr_weap_name(new_equipped);
-			mouse_mover.UpdateCurrPattern();
-		} else if (curr_state == RECORDING && new_equipped != mouse_recorder.get_curr_weap_name()) {
-			mouse_recorder.set_curr_weap_name(new_equipped);
+	// update mouse handlers with new weapon to appropriately record or playback correct weapon, depending on mode
+	if (MouseHandler::weapon_names.count(new_weapon) != 0) {
+		if (curr_state == USING && new_weapon != mouse_mover.get_curr_weap_name()) {
+			mouse_mover.set_curr_weap_name(new_weapon);
+			mouse_mover.update_current_pattern();
+		} else if (curr_state == RECORDING && new_weapon != mouse_recorder.get_curr_weap_name()) {
+			mouse_recorder.set_curr_weap_name(new_weapon);
 		}
 	}
 
 	// manually updating GUI with currently equipped weapon.
 	if (curr_state == USING) {
-		gui_curr_weapon->setLabel(kCurrWeaponPre + mouse_mover.get_curr_weap_name());
+		gui_curr_weapon->setLabel(curr_weapon_prefix + mouse_mover.get_curr_weap_name());
 	} else {
-		gui_curr_weapon->setLabel(kCurrWeaponPre + mouse_recorder.get_curr_weap_name());
+		gui_curr_weapon->setLabel(curr_weapon_prefix + mouse_recorder.get_curr_weap_name());
 	}
 	
 }
@@ -69,16 +71,18 @@ void ofApp::draw() {}
 
 void ofApp::UpdateProgramState(ofxDatGuiDropdownEvent state_change) {
 	state_change.target->toggle();
+	// detect which mode user chose to switch to
+	// cast to ProgramState enum as drop down event returns index of selected option
 	curr_state = static_cast<ProgramState>(state_change.child);
 
 	if (curr_state == USING) {
-		mouse_mover.Setup();
-		mouse_mover.Run();
+		mouse_mover.setup();
+		mouse_mover.run();
 	}
 
 	if (curr_state == RECORDING) {
-		mouse_recorder.Setup();
-		mouse_recorder.Run();
+		mouse_recorder.setup();
+		mouse_recorder.run();
 	}
 }
 
