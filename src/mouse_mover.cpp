@@ -34,6 +34,7 @@ LRESULT MouseMover::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 				switch (raw_input->data.mouse.usButtonFlags) {
 					case 1: {
 						is_m_left_down = true;
+						// move mouse using a separate thread in order to not block rest of the program while actively using the aimbot
 						std::thread pattern_thread = std::thread(move_with_pattern, curr_weapon, std::ref(is_m_left_down));
 						pattern_thread.detach();
 						break;
