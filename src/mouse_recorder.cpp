@@ -22,9 +22,10 @@ void MouseRecorder::add_new_mouse_data(const RAWMOUSE &m_data) {
 
 void MouseRecorder::write_buffer_to_file() {
 	if (curr_weapon_name != inactive_weapon) {
-		// I am saving patterns as .txt files for the sake of simplicity during development (especially given when I first developed SteadyHand).
-		// Using a text format does slow down my program startup performance, but it should not make a difference during playback/aimbot mode
-		// as all patterns are loaded from files into memory only once on startup.
+		// Saving patterns as .txt files for the sake of simplicity during development (especially given when I first developed SteadyHand).
+		// Using a text format does slow down my program's speed regarding loading in the patterns later,
+		// but it should not make a difference during playback/aimbot mode as all patterns are loaded from files into memory only once on startup.
+
 		// If I wanted to prioritize performance more, I could store the mouse pattern data in a binary format to speed up reads/writes.
 		std::string filename = "patterns/" + curr_weapon_name + ".txt";
 		std::ofstream pattern_file(filename);
@@ -74,8 +75,8 @@ LRESULT MouseRecorder::ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) {
 				add_new_mouse_data(raw_input->data.mouse);
 			}
 
-			// Keyboard hotkeys are available for the user during the recording mode in order to save/clear the mouse pattern buffer and/or exit SteadyHand.
-			// This allows user to control the program without clicking/moving the mouse (which would be recorded in this mode).
+			// Keyboard hotkeys for user to save/clear the mouse pattern buffer and/or exit SteadyHand.
+			// Allows user to control the program without clicking/moving the mouse (which would be recorded in this mode).
 			if (raw_input->header.dwType == RIM_TYPEKEYBOARD && raw_input->data.keyboard.Flags == 0) {
 				switch (raw_input->data.keyboard.VKey) {
 					case VirtualKeys::ENTER: {

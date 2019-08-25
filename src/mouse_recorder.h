@@ -18,7 +18,7 @@ public:
 			  dy(y_delta),
 			  mleft_code(m_left_status) {};
 
-	// implement << operator for this struct
+	// override << operator
 	friend std::ostream& operator<<(std::ostream& os, const MouseData& m_data);
 };
 
@@ -26,7 +26,7 @@ public:
 class MouseRecorder : public MouseHandler {
 
 private:
-	// vector that acts a buffer to store all tracked mouse data for single current "run"
+	// vector that acts a buffer to store all tracked mouse data for single current "run"/"recording"
 	std::vector<MouseData> mouse_data_buf;
 
 	// processes raw mouse input data into a MouseData object and adds it to the buffer
@@ -36,7 +36,7 @@ private:
 	LRESULT ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param);
 
 	// writes the current mouse data buffer to a file using its curr_weapon_name attribute as the filename
-	// automatically only saves mouse data that was recorded while the mouse left button was pressed dow
+	// automatically only saves mouse data that was recorded while the mouse left button was pressed down
 	void write_buffer_to_file();
 };
 

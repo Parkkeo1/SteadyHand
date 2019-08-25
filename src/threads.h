@@ -11,7 +11,7 @@
 using json = nlohmann::json;
 
 // thread class, subclassed from openFrameworks's ofThread functionality, 
-// to implment dedicated background thread that runs the backgrobackend server that receives real-time updates about player from game
+// to implment dedicated background thread that runs the background backend server that receives real-time updates about player from game
 class ServerThread : public ofThread {
 
 	// currently equipped gun of the user in-game

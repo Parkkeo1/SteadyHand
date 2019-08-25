@@ -3,6 +3,7 @@
 void MouseMover::load_all_patterns() {
 	// for all weapons, load in their saved "patterns"
 	for (auto &weapon_name : weapon_names) {
+		// for development purposes: read .txt files from hardcoded patterns/ directory
 		loaded_patterns.insert({ weapon_name, load_pattern_from_file("patterns/" + weapon_name + ".txt") });
 	}
 
@@ -84,6 +85,7 @@ PatternObject MouseMover::load_pattern_from_file(const std::string &filename) {
 
 			int delay_time = std::stoll(xy_info[0]);
 
+			// save x,y coordinates AND delay since last data point
 			spray_pattern.push_back({ delay_time - prev_time, std::stoi(xy_info[1]), std::stoi(xy_info[2]) });
 			prev_time = delay_time;
 		}
@@ -124,7 +126,7 @@ void MouseMover::move_with_pattern(const PatternObject *loaded_pattern, std::ato
 
 	for (auto xy_delta : *loaded_pattern) {
 		// while firing (and this condition is checked every iteration so that SteadyHand stops moving the mouse once user stops firing the weapon),
-		// execute the current weapon's saved pattern in order and control its recoil in-game.
+		// execute the current weapon's saved pattern in order and thus control the weapon's recoil in-game.
 		if (is_firing) {
 			mouse_move(&m_input_buf, std::get<1>(xy_delta), std::get<2>(xy_delta));
 			x_total_dist += std::get<1>(xy_delta);
@@ -132,11 +134,13 @@ void MouseMover::move_with_pattern(const PatternObject *loaded_pattern, std::ato
 
 			// To mimic the real-life delay between different mouse coordinates when a human is moving a mouse, 
 			// implement a delay between each mouse movement to make sure the pattern is not executed too quickly;
-			// the aimbot must correctly match the recoil of the weapon being fired in-game in real-time.
+			// the aimbot must correctly match the recoil of the weapon being fired in-game in real-time, ideally bullet-by-bullet.
 
 			// Disclaimer: Due to hidden/implicit delays between each iteration of the loop, 
 			// it is possible for this loop to "fall behind" the firing rate of the weapon in-game.
+			// Sometimes better to just implement a constant delay between the data points.
 			Sleep(std::get<0>(xy_delta));
+			// Sleep(1);
 		} else {
 			break;
 		}

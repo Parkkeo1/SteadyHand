@@ -55,7 +55,7 @@ LPBYTE MouseHandler::check_message_size(LPARAM &l_param) {
 LRESULT MouseHandler::StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param) {
 	// this function allows for an object-oriented approach to implementing the WinProc callback function(s).
 	// in this case, it is useful because I want two callback functions (one for recording, one for playback)
-	// that each do different things with the user input data.
+	// that each do different things with the user input data, depending on the mode indicated by the MouseHandler object
 	MouseHandler *p_this = (MouseHandler*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	if (!p_this) {

@@ -14,8 +14,9 @@ void ServerThread::threadedFunction() {
 					if (weapon["state"] == "active") {
 						// mutex locking functionality from ofThread to ensure updates to this variable are thread-safe,
 						// as this variable is read by other parts of program
+						std::string weapon_name = weapon["name"];
 						lock();
-						equipped_weapon = weapon["name"];
+						equipped_weapon = weapon_name;
 						unlock();
 						break;
 					}

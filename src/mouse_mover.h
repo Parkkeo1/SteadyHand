@@ -21,7 +21,7 @@ class MouseMover : public MouseHandler {
 	// atomic boolean used across threads to keep track of the mouse's left button status
 	std::atomic<bool> is_m_left_down;
 
-	const static int xHairResetDelay = 250;
+	const static int xHairResetDelay = 300;
 
 public:
 	MouseMover() : MouseHandler(), is_m_left_down(false) {}
