@@ -18,22 +18,26 @@ By simulating mouse movements in place of the user (through the [Windows C++ API
 
 SteadyHand is structured as an openFrameworks application with a real-time GUI, background webserver, and a Win32 API backend. **Detailed and in-depth documentation and explanation are present within the files themselves (for the master branch)**, but here's a brief overview:
 
+
 - GUI: Allows user to switch between "Active" and "Recording" modes, as described below. Displays which weapon SteadyHand detects the user to be using in real-time so that user can validate that the program is recording/aiming for the correct weapon in-game.
-    * Relevant files: ofApp.h, ofApp.cpp
+    * Relevant files: `ofApp.h, ofApp.cpp`
 
 - Webserver: Detects in real-time the currently equipped weapon of the user in-game so that the rest of the program can record a pattern for or automatically control the recoil for the correct weapon, depending on the current mode ("Active" vs. "Recording").
-    * Relevant files: threads.h, threads.cpp
+    * Relevant files: `threads.h, threads.cpp`
     
 - Win32 API backend: Handles the "recording weapon recoil patterns" and "recoil aimbot" functionality of SteadyHand. Reads inputs from user's mouse and keyboard via Windows. Simulates user mouse input via Windows.
-    * Relevant files: mouse_handler.h, mouse_handler.cpp, mouse_mover.h, mouse_mover.cpp, mouse_recorder.h, mouse_recorder.cpp
-    
+    * Relevant files: `mouse_handler.h, mouse_handler.cpp, mouse_mover.h, mouse_mover.cpp, mouse_recorder.h, mouse_recorder.cpp`
+
+
 As for the changes added in August 2019 to the master branch, they largely involved refactoring the code to have better style (fewer global variables/constants, more OOP, etc) and more documentation.  
 
 ### Building and Setup
 
 [Visual Studio (2015 and above)](http://openframeworks.cc/setup/vs/) is recommended/needed for VC++ and the Windows.h file. [openFrameworks](http://openframeworks.cc/) is required. The solution and project files must be generated using the [openFrameworks project-generator](http://openframeworks.cc/learning/01_basics/create_a_new_project/) application, and while doing so, the [ofxDatGui addon](https://braitsch.github.io/ofxDatGui/index.html#installation) needs to be included; follow the detailed instructions on the ofxDatGui and openFrameworks website.
 
-After generating the openFrameworks project/solution, external dependencies need to be included. 
+After generating the openFrameworks project/solution, external dependencies need to be included.
+
+
 - [Boost](https://www.boost.org/users/history/version_1_67_0.html) needs to be downloaded, compiled, and included into the project; follow instructions in this [SO answer](https://stackoverflow.com/questions/2629421/how-to-use-boost-in-visual-studio-2010/2655683#2655683). 
 - Afterwards, [Crow](https://github.com/ipkn/crow) will need to be included into the project to set up the HTTP endpoint server to use game-state integration. **This library is already located in this github repository**, so just add the crow/ folder to the additional include directories in your project like you did for ofxDatGui and Boost. 
 - This [JSON library](https://github.com/nlohmann/json) is also required to parse JSON payloads. Like Crow, **this library is already in the repository**. Add the nlohmann/ folder to additional include directories as well.
