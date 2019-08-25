@@ -29,7 +29,7 @@ SteadyHand is structured as an openFrameworks application with a real-time GUI, 
     * Relevant files: `mouse_handler.h, mouse_handler.cpp, mouse_mover.h, mouse_mover.cpp, mouse_recorder.h, mouse_recorder.cpp`
 
 
-As for the changes added in August 2019 to the master branch, they largely involved refactoring the code to have better style (fewer global variables/constants, more OOP, etc) and more documentation.  
+**As for the changes added in August 2019 to the master branch, they largely involved refactoring the code to have better style (fewer global variables/constants, more OOP, etc) and more documentation.**
 
 ### Building and Setup
 
