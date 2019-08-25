@@ -1,10 +1,8 @@
 # SteadyHand
 
-An auto-aim/recoil assist program for [Counter-Strike: Global Offensive](https://en.wikipedia.org/wiki/Counter-Strike:_Global_Offensive) (CS:GO) written in C++ using the [Windows API](https://msdn.microsoft.com/en-us/library/windows/desktop/ms632585(v=vs.85).aspx), [openFrameworks](http://openframeworks.cc/), Valve's [Game-State Integration](https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration), and [Crow](https://github.com/ipkn/crow).
+An auto-aim/recoil assist program for [Counter-Strike: Global Offensive](https://en.wikipedia.org/wiki/Counter-Strike:_Global_Offensive) (CS:GO) created by Keon (Isaac) Park, CS @ Illinois, and written in C++ using the [Windows API](https://msdn.microsoft.com/en-us/library/windows/desktop/ms632585(v=vs.85).aspx), [openFrameworks](http://openframeworks.cc/), Valve's [Game-State Integration](https://developer.valvesoftware.com/wiki/Counter-Strike:_Global_Offensive_Game_State_Integration), and [Crow](https://github.com/ipkn/crow).
 
 **[Demo Video](https://youtu.be/eF7Y9nflMeQ)** from 2018. There are differences in the UI between the current master branch and video demo (based off the legacy2018 branch), but the key aspects and functionality of the program remain the same. The main differences involve better coding style and documentation/comments in the master branch.
-
-By Keon (Isaac) Park, CS @ Illinois.
 
 **Disclaimer:** This program is a proof-of-concept, meaning that it is not meant to be used in live CS:GO games to cheat. If you want to test SteadyHand in-game, run CS:GO with the launch option **-insecure** and play in a offline map/match. I developed this project in order to learn and practice C++, Windows programming, and GUI design.
 
