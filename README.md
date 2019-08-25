@@ -38,7 +38,7 @@ SteadyHand is structured as an openFrameworks application with a real-time GUI, 
 After generating the openFrameworks project/solution, external dependencies need to be included.
 
 
-- [Boost](https://www.boost.org/users/history/version_1_67_0.html) needs to be downloaded, compiled, and included into the project; follow instructions in this [SO answer](https://stackoverflow.com/questions/2629421/how-to-use-boost-in-visual-studio-2010/2655683#2655683). 
+- [Boost](https://www.boost.org/users/history/version_1_67_0.html) v1.67 needs to be downloaded, compiled, and included into the project; follow instructions in this [SO answer](https://stackoverflow.com/questions/2629421/how-to-use-boost-in-visual-studio-2010/2655683#2655683). 
 - Afterwards, [Crow](https://github.com/ipkn/crow) will need to be included into the project to set up the HTTP endpoint server to use game-state integration. **This library is already located in this github repository**, so just add the crow/ folder to the additional include directories in your project like you did for ofxDatGui and Boost. 
 - This [JSON library](https://github.com/nlohmann/json) is also required to parse JSON payloads. Like Crow, **this library is already in the repository**. Add the nlohmann/ folder to additional include directories as well.
 
