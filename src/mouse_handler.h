@@ -48,8 +48,7 @@ protected:
 
 	static LRESULT CALLBACK StaticWinProc(HWND hwnd, UINT msg, WPARAM w_param, LPARAM l_param);
 
-	// implemented callback function to receive Windows raw input messages within MouseHandler class
-	// overridden by subclasses for either recording for playback of mouse input
+	// subclasses implement this callback function to receive Windows raw input messages,  for either recording for playback of mouse input
 	virtual LRESULT ClassWinProc(UINT msg, WPARAM w_param, LPARAM l_param) = 0;
 
 public:

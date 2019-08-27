@@ -1,4 +1,4 @@
-#include "mouse_handler.h" // <- detailed comments in header
+#include "mouse_handler.h"
 
 // initializing static members
 const std::string MouseHandler::inactive_weapon = "inactive";

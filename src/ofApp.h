@@ -27,7 +27,7 @@ private:
 	// dedicated ofThread to receive real-time player data from game client
 	ServerThread bg_server_thread;
 
-	// handles the specific functionalities of SteadyHand
+	// objects handle the specific functionalities of SteadyHand
 	MouseMover mouse_mover;
 	MouseRecorder mouse_recorder;
 
